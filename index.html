@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tucson Night Life App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Unbounded:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout idea: one phone-width column. Black room, magenta-to-violet club light for actions, gold only where money or VIP is involved. */
+  --ink:#0a0710; --panel:#150f1d; --raise:#20172b; --line:#35293f;
+  --text:#f7f0fb; --dim:#ab9bbb;
+  --hot:#ff2d7a; --violet:#a63dff; --gold:#ffc24d;
+  --ok:#3ddc97; --warn:#ffb020; --crit:#ff5c5c;
+  --neon:linear-gradient(100deg,#ff2d7a,#a63dff);
+  --sunset:linear-gradient(100deg,#ff2d7a,#ff8a3d 60%,#ffc24d);
+  --display:'Unbounded','Arial Black',system-ui,sans-serif;
+  --body:'Instrument Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:#050308;color:var(--text);font:400 15px/1.45 var(--body);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+[data-a]{cursor:pointer}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:6px}
+.app{position:relative;height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:column;background:var(--ink);overflow:hidden;overflow:clip;box-shadow:0 0 0 1px #1c1426,0 0 120px #a63dff22}
+.app:before{content:"";position:absolute;inset:-60px 0 auto 0;height:340px;background:radial-gradient(closest-side,#ff2d7a2e,transparent),radial-gradient(closest-side at 80% 30%,#a63dff33,transparent);pointer-events:none}
+header{position:relative;padding:14px 16px 8px;z-index:2}
+.bar{display:flex;align-items:center;gap:8px}
+.logo{font:800 14px/1 var(--display);letter-spacing:.02em;display:flex;flex-direction:column;gap:3px}
+.logo b{background:var(--sunset);-webkit-background-clip:text;background-clip:text;color:transparent}
+.logo small{font:600 9px/1 var(--body);letter-spacing:.3em;color:var(--dim)}
+.sp{flex:1}
+.pts{font:700 12px var(--body);padding:7px 10px;border-radius:99px;background:#ffc24d1c;color:var(--gold);border:1px solid #ffc24d44;font-variant-numeric:tabular-nums}
+.iconbtn{position:relative;width:36px;height:36px;border-radius:50%;background:var(--raise);display:grid;place-items:center;border:1px solid var(--line)}
+.iconbtn i{position:absolute;top:-3px;right:-3px;min-width:17px;height:17px;border-radius:9px;background:var(--hot);font:700 10px/17px var(--body);font-style:normal;text-align:center;padding:0 4px}
+.acct{font:700 11px var(--body);padding:8px 10px;border-radius:99px;background:var(--raise);border:1px solid var(--line);color:var(--gold);white-space:nowrap}
+svg.ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+main{position:relative;flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 16px 26px;display:flex;flex-direction:column;gap:18px;scrollbar-width:none}
+main::-webkit-scrollbar{display:none}
+main>*,.pane>*{flex:0 0 auto}
+nav{position:relative;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:#0d0914;border-top:1px solid var(--line);padding:6px 6px 10px}
+nav:empty{display:none}
+nav button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;font:600 10px var(--body);color:var(--dim);border-radius:10px}
+nav button.on{color:var(--hot)}
+nav button.ctr span.orb{width:46px;height:46px;margin-top:-22px;border-radius:50%;background:var(--neon);display:grid;place-items:center;color:#fff;box-shadow:0 6px 22px #ff2d7a66;border:3px solid #0d0914}
+h1{font:800 25px/1.08 var(--display);letter-spacing:-.02em;margin:0;text-wrap:balance}
+h1 em{font-style:normal;background:var(--sunset);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font:800 14px/1.2 var(--display);margin:0;letter-spacing:.01em;text-wrap:balance}
+h3{font:700 16px/1.25 var(--body);margin:0}
+.eyebrow{font:700 10px var(--body);letter-spacing:.22em;text-transform:uppercase;color:var(--hot)}
+.dim{color:var(--dim)} .gold{color:var(--gold)} .small{font-size:12.5px} .num{font-variant-numeric:tabular-nums}
+.row{display:flex;align-items:center;gap:10px} .between{justify-content:space-between} .wrap{flex-wrap:wrap}
+.col{display:flex;flex-direction:column;gap:10px} .g6{gap:6px}
+.grow{flex:1;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:10px;text-align:left}
+.card.vip{border-color:#ffc24d66;background:linear-gradient(160deg,#2a1f0d,#150f1d 60%)}
+.card.good{border-color:var(--ok)} .card.bad{border-color:var(--crit)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 16px;border-radius:13px;background:var(--neon);color:#fff;font:700 13px var(--body);letter-spacing:.04em;text-transform:uppercase;text-decoration:none;text-align:center;cursor:pointer}
+.btn.ghost{background:var(--raise);border:1px solid var(--line)}
+.btn.goldb{background:linear-gradient(100deg,#ffd778,#e9a020);color:#1a1204}
+.btn.sm{padding:9px 12px;font-size:11.5px;border-radius:10px}
+.btn.full{width:100%}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
+label.btn{position:relative}
+label.btn:focus-within{outline:2px solid var(--gold);outline-offset:2px}
+.chips{display:flex;gap:8px;overflow-x:auto;margin:0 -16px;padding:2px 16px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;padding:8px 13px;border-radius:99px;background:var(--panel);border:1px solid var(--line);font:600 12px var(--body);color:var(--dim)}
+.chip.on{background:var(--neon);border-color:transparent;color:#fff}
+.tag{display:inline-block;padding:4px 8px;border-radius:7px;background:var(--raise);font:600 10.5px var(--body);color:var(--dim);white-space:nowrap}
+.tag.live{background:var(--crit);color:#fff;letter-spacing:.08em}
+.tag.gold{background:#ffc24d22;color:var(--gold)}
+.tag.ok{background:#3ddc9722;color:var(--ok)} .tag.warn{background:#ffb02022;color:var(--warn)} .tag.crit{background:#ff5c5c22;color:var(--crit)}
+.art{position:relative;height:128px;border-radius:14px;overflow:hidden;background:#120b1a}
+.art:before{content:"";position:absolute;inset:0;background:
+  radial-gradient(60% 90% at 20% 0,hsl(var(--h) 95% 58%/.85),transparent 60%),
+  radial-gradient(50% 80% at 85% 10%,hsl(calc(var(--h) + 55) 95% 55%/.7),transparent 60%),
+  repeating-conic-gradient(from 200deg at 50% -10%,#fff0 0 7deg,#ffffff14 7deg 9deg)}
+.art:after{content:"";position:absolute;inset:auto 0 0 0;height:55%;background:radial-gradient(circle,#000 1.2px,transparent 1.6px) 0 0/9px 9px,linear-gradient(transparent,#0a0710);opacity:.85}
+.art .over{position:absolute;z-index:1;inset:auto 10px 10px 10px;display:flex;gap:6px;flex-wrap:wrap}
+.art.tall{height:160px}
+.meter{height:8px;border-radius:9px;background:var(--raise);overflow:hidden}
+.meter i{display:block;height:100%;border-radius:9px;background:var(--neon)}
+.meter.goldm i{background:linear-gradient(90deg,#e9a020,#ffd778)}
+.flyers{display:flex;gap:12px;overflow-x:auto;margin:0 -16px;padding:0 16px 4px;scrollbar-width:none}
+.flyer{flex:0 0 190px;display:flex;flex-direction:column;gap:8px;text-align:left}
+.flyer img,.flyer .art{width:100%;height:240px;object-fit:cover;object-position:top;border-radius:14px;border:1px solid var(--line)}
+.map{position:relative;border-radius:16px;border:1px solid var(--line);background:#120d19;overflow:hidden}
+.map svg{display:block;width:100%;height:auto}
+.pin{position:absolute;transform:translate(-50%,-50%);width:30px;height:30px;border-radius:50%;background:var(--neon);border:2px solid #fff;font:700 10px/26px var(--body);text-align:center;color:#fff;box-shadow:0 0 0 6px #ff2d7a33}
+.pin.hotp{box-shadow:0 0 0 6px #ff2d7a55,0 0 0 13px #ff2d7a22}
+.av{flex:0 0 auto;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font:700 12px var(--body);color:#fff;background:hsl(var(--h) 70% 42%);border:2px solid var(--ink)}
+.av.lg{width:72px;height:72px;font-size:24px}
+.avs{display:flex}.avs .av{margin-left:-9px}.avs .av:first-child{margin-left:0}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:2px}
+.tile b{font:800 18px/1.1 var(--display);font-variant-numeric:tabular-nums}
+.tile span{font-size:11.5px;color:var(--dim)}
+.big{font:800 34px/1 var(--display);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.kv{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px;width:100%;text-align:left}
+.kv:last-child{border-bottom:0}.kv b{font-variant-numeric:tabular-nums;text-align:right}
+.bars{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px;align-items:end;height:120px;padding-top:16px}
+.bars div{position:relative;border-radius:6px 6px 2px 2px;background:var(--neon);min-height:2px}
+.bars div b{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font:600 10px var(--body);color:var(--dim);white-space:nowrap}
+.barlabels{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px;text-align:center;font-size:10.5px;color:var(--dim)}
+.hb{display:grid;grid-template-columns:64px 1fr 70px;align-items:center;gap:10px;font-size:13px}
+.hb b{text-align:right;font-variant-numeric:tabular-nums}
+input[type=text],input[type=number],input[type=email],input[type=tel],input[type=date],input[type=time],select,textarea{width:100%;background:var(--raise);border:1px solid var(--line);border-radius:12px;padding:12px;outline:0;min-width:0}
+input:focus,select:focus,textarea:focus{border-color:var(--hot)}
+textarea{resize:none;min-height:72px}
+label.f{display:flex;flex-direction:column;gap:6px;font:600 11px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+input[type=range]{width:100%;accent-color:#ff2d7a}
+.step{display:flex;align-items:center;gap:12px}
+.step button{width:34px;height:34px;border-radius:50%;background:var(--neon);font:700 18px/1 var(--body)}
+.sw{position:relative;width:44px;height:26px;border-radius:14px;background:var(--raise);border:1px solid var(--line);flex:0 0 auto}
+.sw:after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:var(--dim);transition:.15s}
+.sw.on{background:var(--hot);border-color:transparent}.sw.on:after{left:20px;background:#fff}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.item{position:relative;display:flex;flex-direction:column;gap:5px;text-align:left;font-size:12.5px;line-height:1.25}
+.ph{position:relative;aspect-ratio:1;border-radius:14px;border:1px solid var(--line);background:linear-gradient(150deg,#2b1a3a,#150f1d);display:grid;place-items:center;overflow:hidden;color:var(--gold)}
+.ph img{width:100%;height:100%;object-fit:cover}
+.ph svg.ic{width:34px;height:34px}
+.ph.sm{width:46px;flex:0 0 46px;border-radius:10px}.ph.sm svg.ic{width:22px;height:22px}
+.item .q{position:absolute;top:-6px;right:-6px;min-width:22px;height:22px;border-radius:11px;background:var(--hot);font:700 12px/22px var(--body);text-align:center;padding:0 5px}
+.item b{font-variant-numeric:tabular-nums;color:var(--gold)}
+.sheet{position:absolute;inset:0;z-index:20;display:none;align-items:flex-end;background:#000a}
+.sheet.open{display:flex}
+.sheet .pane{width:100%;max-height:93%;overflow-y:auto;background:var(--ink);border:1px solid var(--line);border-bottom:0;border-radius:22px 22px 0 0;padding:16px 16px 22px;display:flex;flex-direction:column;gap:14px;animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:.4}}
+.close{align-self:flex-end;width:34px;height:34px;border-radius:50%;background:var(--raise);font-size:18px;line-height:1;margin-bottom:-6px}
+.ticket{background:linear-gradient(160deg,#ff2d7a,#a63dff);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:12px;position:relative}
+.ticket:before,.ticket:after{content:"";position:absolute;top:58%;width:22px;height:22px;border-radius:50%;background:var(--ink)}
+.ticket:before{left:-11px}.ticket:after{right:-11px}
+.stamp{border:2px solid #8dffb5;color:#8dffb5;font:700 11px var(--body);letter-spacing:.1em;padding:4px 8px;border-radius:5px;white-space:nowrap}
+.stamp.used{border-color:#fff8;color:#fffc}
+.qr{background:#fff;border-radius:12px;padding:10px;align-self:center;line-height:0}
+.qr svg{display:block;width:176px;height:176px}
+.pass{border-radius:20px;padding:16px;background:linear-gradient(140deg,#241a0a,#0f0a14 55%,#2a0f24);border:1px solid #ffc24d77;display:flex;gap:14px;align-items:center}
+.pass .qr svg,.qr.s svg{width:104px;height:104px}
+.lock{position:relative}
+.lock .veil{position:absolute;inset:0;border-radius:18px;background:linear-gradient(#0a071000,#0a0710 60%);display:flex;align-items:flex-end;justify-content:center;padding:14px}
+.blur{filter:blur(5px);pointer-events:none;user-select:none}
+#push{position:absolute;z-index:30;top:8px;left:10px;right:10px;background:#231a2ef2;border:1px solid var(--line);border-radius:16px;padding:11px 13px;display:flex;gap:10px;align-items:flex-start;transform:translateY(-140%);transition:transform .3s;box-shadow:0 14px 40px #000a;text-align:left}
+#push.show{transform:none}
+#push .dot{flex:0 0 30px;height:30px;border-radius:8px;background:var(--sunset);display:grid;place-items:center;font:800 9px var(--display);color:#1a0b10}
+#toast{position:absolute;z-index:31;left:50%;bottom:86px;transform:translateX(-50%);background:#fff;color:#12091a;font:600 13px var(--body);padding:9px 14px;border-radius:99px;opacity:0;pointer-events:none;transition:.2s;max-width:88%;text-align:center}
+#toast.show{opacity:1}
+.note{font-size:11.5px;color:var(--dim);border-left:2px solid var(--line);padding-left:10px}
+.thumb{width:100%;max-height:200px;object-fit:cover;border-radius:12px;border:1px solid var(--line)}
+a{color:var(--gold)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <button id="push" data-a="openNotifs" aria-live="polite"><span class="dot">TNL</span><span><b id="pushT"></b><br><span class="small dim" id="pushB"></span></span></button>
+  <header>
+    <div class="bar">
+      <div class="logo"><b>TUCSON NIGHT LIFE</b><small>THE CITY AFTER DARK</small></div>
+      <div class="sp"></div>
+      <button class="pts" id="pts" data-a="tab" data-v="rewards" aria-label="Points and rewards"></button>
+      <button class="iconbtn" data-a="openNotifs" aria-label="Notifications" id="bell"></button>
+      <button class="acct" id="acct" data-a="account" aria-label="Account and dashboards"></button>
+    </div>
+  </header>
+  <main id="main"></main>
+  <nav id="nav"></nav>
+  <div class="sheet" id="sheet"><div class="pane" id="pane"></div></div>
+  <div id="toast" role="status"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script>
+/* ---------- data (sample numbers except OVIA's address, door price and the two real flyers) ---------- */
+const VENUES=[
+ {id:'ovia',name:'OVIA Lounge',area:'N Stone Ave',addr:'2449 N Stone Ave',cap:300,cover:10,open:'10 PM to 2 AM, late till 4',tags:['Hip-hop','Hookah','Tables'],deal:'Members: cover waived before 11 PM',h:285,x:47,y:16,friends:['Maya R.','Dre T.','Lexi P.'],partner:1},
+ {id:'saguaro',name:'The Saguaro Room',area:'4th Ave',addr:'Sample venue',cap:220,cover:5,open:'9 PM to 2 AM',tags:['House','Dance floor'],deal:'2-for-1 wells until 10 PM',h:320,x:62,y:52,friends:['Tino G.']},
+ {id:'copper',name:'Copper Still',area:'Congress St',addr:'Sample venue',cap:90,cover:0,open:'5 PM to 1 AM',tags:['Cocktails','No cover','Lounge'],deal:'Double points on craft cocktails',h:25,x:44,y:70,friends:[]},
+ {id:'monsoon',name:'Monsoon Rooftop',area:'Downtown',addr:'Sample venue',cap:180,cover:0,open:'6 PM to 2 AM',tags:['Rooftop','Latin','No cover'],deal:'Free entry for members all night',h:200,x:34,y:62,friends:['Jas W.','Kayla M.']},
+ {id:'barrio',name:'Barrio Social',area:'Barrio Viejo',addr:'Sample venue',cap:140,cover:8,open:'8 PM to 2 AM',tags:['Latin','Live band'],deal:'Banda night: $5 micheladas',h:350,x:38,y:86,friends:[]},
+ {id:'maingate',name:'Main Gate Tap',area:'University Blvd',addr:'Sample venue',cap:260,cover:0,open:'4 PM to 2 AM',tags:['College','Sports','No cover'],deal:'Pitcher specials after the game',h:150,x:80,y:40,friends:['Dre T.']}
+];
+const EVENTS=[
+ {id:'ind',name:'Industry Monday',venue:'ovia',when:'Tonight · 10 PM',status:'live',age:'21+',door:10,promoter:'K. Dot',heads:62,rsvp:96,capE:120,base:{door:620,bar:1840,tables:900,hookah:260},hours:[.3,.45,.25,0,0,0]},
+ {id:'duel',name:'Duel in the Desert After Party',venue:'ovia',when:'Sat Nov 28 · 10 PM to 4 AM',status:'upcoming',age:'21+',door:10,promoter:'K. Dot',img:'assets/duel-in-desert.jpg',heads:0,rsvp:78,capE:120,base:{door:480,bar:0,tables:600,hookah:0},note:'Tailgate takeover. D9 discount.'},
+ {id:'non',name:'Naughty or Nice',venue:'ovia',when:'Fri Dec 4 · 10 PM to 4 AM',status:'upcoming',age:'18+ / 21+',door:10,promoter:'K. Dot',img:'assets/naughty-or-nice.jpg',heads:0,rsvp:41,capE:120,base:{door:210,bar:0,tables:300,hookah:0},note:'Pajama party. Free table section.'},
+ {id:'hal',name:'Halloween Haunt',venue:'ovia',when:'Sat Oct 31 · closed',status:'closed',age:'21+',door:10,promoter:'K. Dot',heads:310,rsvp:342,capE:300,base:{door:3100,bar:9860,tables:4200,hookah:1140},hours:[.08,.19,.27,.24,.14,.08]}
+];
+const REWARDS=[
+ {id:'two',name:'2-for-1 well drink',cost:300,where:'Any partner bar'},
+ {id:'cover',name:'Cover waived',cost:500,where:'OVIA Lounge'},
+ {id:'line',name:'Skip the line',cost:800,where:'Any partner venue'},
+ {id:'hookah',name:'Free hookah session',cost:1500,where:'OVIA Lounge'},
+ {id:'table',name:'VIP table upgrade',cost:4000,where:'OVIA Lounge'}
+];
+const PEOPLE={
+ 'Maya R.':{h:330,tier:'Gold',pts:6420,spots:['OVIA Lounge','Monsoon Rooftop'],bio:'Booth 4 regular. Hip-hop and hookah.'},
+ 'Dre T.':{h:210,tier:'Silver',pts:1310,spots:['Main Gate Tap','OVIA Lounge'],bio:'Game days, then wherever the line is short.'},
+ 'Lexi P.':{h:40,tier:'Silver',pts:1510,spots:['Monsoon Rooftop','Barrio Social'],bio:'Bachata first, questions later.'},
+ 'Tino G.':{h:120,tier:'Silver',pts:980,spots:['The Saguaro Room'],bio:'House music on 4th Ave.'},
+ 'Jas W.':{h:265,tier:'Gold',pts:3120,spots:['Monsoon Rooftop'],bio:'Rooftop sunsets and cocktails.'},
+ 'Kayla M.':{h:15,tier:'Silver',pts:760,spots:['Monsoon Rooftop','Copper Still'],bio:'Cocktail bars over clubs.'}};
+const CATS={door:'Door',bar:'Bar',tables:'Tables',hookah:'Hookah'};
+const NCATS={live:'Live venue updates',friends:'Friends going out',deals:'Deals and points',events:'Event reminders',blasts:'Promoter and venue blasts'};
+const PAYN={stripe:'Card, Apple Pay or Google Pay (Stripe)',cashapp:'Cash App',venmo:'Venmo',zelle:'Zelle'};
+const ROLE_L={member:'Member',promoter:'Promoter',owner:'Venue owner',staff:'Staff',dj:'DJ',sec:'Security'};
+const GUESTS=['Maya R.','Dre T.','Lexi P.','Tino G.','Jas W.','Kayla M.'];
+const DEF={user:null,accounts:[],ob:{step:0,via:''},memberPrice:40,tblOn:false,role:'member',tab:{member:'tonight',promoter:'studio',owner:'live',staff:'scan',dj:'booth',sec:'door'},djTipsOn:true,djTipMin:2,member:false,points:1240,life:1840,streak:3,filter:'All',mapOn:false,
+ crowd:{ovia:52,saguaro:78,copper:35,monsoon:64,barrio:41,maingate:88},wait:{ovia:5,saguaro:15,copper:0,monsoon:5,barrio:0,maingate:25},
+ liveMsg:'Industry Monday: half-off hookah until midnight.',checkins:[],favs:[],follow:[],going:['duel'],sales:[],scans:[],tickets:[],vouchers:[],
+ inGuests:[0,1,3],mute:{},share:false,form:{},bk:{qty:2,table:false,splitTab:false},
+ menu:[{id:'m1',name:'Well drink',price:8,cat:'bar',g:'glass'},{id:'m2',name:'House margarita',price:12,cat:'bar',g:'glass'},{id:'m3',name:'Draft beer',price:6,cat:'bar',g:'beer'},{id:'m4',name:'Shot',price:7,cat:'bar',g:'shot'},{id:'m5',name:'Hookah',price:30,cat:'hookah',g:'hookah'},{id:'m6',name:'Hookah refill',price:15,cat:'hookah',g:'hookah'},{id:'m7',name:'Bottle service',price:180,cat:'tables',g:'bottle'},{id:'m8',name:'Water',price:3,cat:'bar',g:'bottle'}],
+ cart:{},scart:{},custom:0,orders:[],charges:[],pays:[],pending:null,scanMember:false,lastScan:null,editMenu:false,seq:1,
+ payc:{stripe:{on:true,id:'acct_demo_ovia'},cashapp:{on:false,id:''},venmo:{on:false,id:''},zelle:{on:false,id:''}},
+ tax:{mode:'pct',val:8.7},
+ events:[],codes:[{code:'KDOT',pct:0,by:'K. Dot'},{code:'DUEL20',pct:20,by:'K. Dot'}],
+ djq:[{id:9001,song:'Not Like Us, Kendrick Lamar',note:'For booth 4',by:'Maya R.',st:'new',tip:5,tipSt:'pledged'}],djmsgs:[],
+ split:{door:30,bar:20,tables:15,hookah:0,fee:5,dj:'venue',sec:'split',host:'venue',djCost:400,secCost:600,hostCost:150,by:'owner',sent:true,agreed:false},counter:null,xfer:{},
+ pout:{promoter:{on:false,id:''},dj:{on:false,id:''},staff:{on:false,id:''},sec:{on:false,id:''}},
+ posts:[
+  {who:'Maya R.',at:'OVIA Lounge',txt:'Booth 4 is ours tonight. Pull up before the line starts.',likes:24,t:'18 min'},
+  {who:'Dre T.',at:'Main Gate Tap',txt:'Game let out and this place is already wall to wall.',likes:11,t:'41 min'},
+  {who:'Lexi P.',at:'Monsoon Rooftop',txt:'Sunset set from the roof. Bachata starts at 9.',likes:37,t:'1 hr'}],
+ liked:[],
+ notifs:[
+  {c:'live',t:'OVIA Lounge is filling up',b:'52% full, 5 minute line. Half-off hookah until midnight.',time:'9:42 PM',unread:1},
+  {c:'friends',t:'3 friends are at OVIA Lounge',b:'Maya, Dre and Lexi checked in.',time:'9:30 PM',unread:1},
+  {c:'events',t:'Duel in the Desert is in 19 days',b:'You are on the guest list. Tables are 50% reserved.',time:'6:00 PM',unread:0}]
+};
+let S=load(), sheetFn=null, sheetArg=null, toastT, pushT;
+function load(){let s={};try{s=JSON.parse(localStorage.getItem('tnl-v4')||'{}')}catch(e){}
+  const hot=window.claude&&window.claude.hot&&window.claude.hot.data; if(hot&&hot.tab)s=hot;
+  const d=JSON.parse(JSON.stringify(DEF)); return Object.assign(d,s,{tab:Object.assign(d.tab,s.tab||{}),split:Object.assign(d.split,s.split||{}),pout:Object.assign(d.pout,s.pout||{})})}
+function save(){if(S.user){S.accounts=S.accounts.filter(a=>a.contact.toLowerCase()!==S.user.contact.toLowerCase()).concat([Object.assign({},S.user,{role:S.role})])}try{localStorage.setItem('tnl-v4',JSON.stringify(S))}catch(e){}}
+try{window.claude&&window.claude.hot&&window.claude.hot.snapshot&&window.claude.hot.snapshot(()=>S)}catch(e){}
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+const usd=n=>{n=Math.round(n*100)/100;return (n<0?'−':'')+'$'+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:n%1?2:0,maximumFractionDigits:2})};
+const num=n=>Math.round(n).toLocaleString('en-US');
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const V=id=>VENUES.find(v=>v.id===id), ALL=()=>S.events.concat(EVENTS), E=id=>ALL().find(e=>e.id===id);
+const rate=()=>S.member?20:10;
+const fv=(k,d)=>S.form[k]==null?d:S.form[k];
+const me=()=>S.user?S.user.name:'You';
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+function ageOf(dob){if(!dob)return null;const p=dob.split('-').map(Number),n=new Date();let a=n.getFullYear()-p[0];if(n.getMonth()+1<p[1]||(n.getMonth()+1===p[1]&&n.getDate()<p[2]))a--;return a}
+const ageBand=()=>{const a=S.user?ageOf(S.user.dob):null;return a==null?null:a>=21?'21+':'18+'};
+const ageTag=()=>{const b=ageBand();return `<span class="tag ${b==='21+'?'ok':b?'warn':''}">${b?b:'Age not on file'}</span>`};
+function fmtT(t){if(!t)return '';const p=t.split(':').map(Number),h=p[0]%12||12;return h+(p[1]?':'+String(p[1]).padStart(2,'0'):'')+(p[0]<12?' AM':' PM')}
+function fmtD(d){const p=d.split('-').map(Number),x=new Date(p[0],p[1]-1,p[2]);return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][x.getDay()]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][p[1]-1]+' '+p[2]}
+const P={list:'M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01',moon:'M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z',users:'M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1M9.5 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM21 19v-1a4 4 0 0 0-3-3.8M15.5 4.2a3 3 0 0 1 0 5.6',qr:'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z',user:'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 20a8 8 0 0 1 16 0',bell:'M6 16v-5a6 6 0 1 1 12 0v5l1.5 2h-15zM10 20a2 2 0 0 0 4 0',chart:'M4 20V10M10 20V4M16 20v-7M21 20H3',send:'M4 12l16-8-6 16-3-7z',cash:'M3 7h18v10H3zM12 14.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',pulse:'M3 12h4l2-6 4 12 2-6h6',cal:'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4',bag:'M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2',music:'M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z',glass:'M5 4h14l-7 8zM12 12v7M8 20h8',beer:'M6 5h9v15H6zM15 8h3v7h-3',shot:'M7 6h10l-2 13H9z',hookah:'M12 3v5M9 8h6l1 5a4 4 0 0 1-8 0zM12 17v4M8 21h8M16 11c4 0 4 6 1 8',bottle:'M10 3h4v4l2 3v11H8V10l2-3z'};
+const ic=n=>`<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="${P[n]||P.glass}"/></svg>`;
+const hue=n=>PEOPLE[n]?PEOPLE[n].h:n==='You'||n===me()?300:(n.charCodeAt(0)*37)%360;
+const av=(n,cls)=>`<span class="av ${cls||''}" style="--h:${hue(n)}" data-a="profile" data-v="${esc(n)}" role="button" tabindex="0" aria-label="${esc(n)} profile">${esc(n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase())}</span>`;
+function qr(text,cls){try{const q=qrcode(0,'M');q.addData(text);q.make();const n=q.getModuleCount();let d='';for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+=`M${c} ${r}h1v1h-1z`;
+  return `<div class="qr ${cls||''}"><svg viewBox="0 0 ${n} ${n}" shape-rendering="crispEdges" role="img" aria-label="QR code"><path d="${d}" fill="#000"/></svg></div>`}
+  catch(e){return `<div class="qr ${cls||''}"><svg viewBox="0 0 10 10"><text x="5" y="5.6" font-size="1" text-anchor="middle" fill="#000">${esc(text)}</text></svg></div>`}}
+function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2800)}
+function notify(c,t,b){if(S.mute[c])return;S.notifs.unshift({c,t,b,time:'Now',unread:1});$('pushT').textContent=t;$('pushB').textContent=b;$('push').classList.add('show');clearTimeout(pushT);pushT=setTimeout(()=>$('push').classList.remove('show'),4200)}
+function earn(amount){const p=Math.round(amount*rate());S.points+=p;S.life+=p;return p}
+const tier=()=>S.life>=10000?'Black':S.life>=2500?'Gold':'Silver';
+const nextTier=()=>S.life>=10000?null:S.life>=2500?{n:'Black',at:10000,from:2500}:{n:'Gold',at:2500,from:0};
+const methods=()=>Object.keys(PAYN).filter(k=>S.payc[k].on);
+const taxOf=sub=>sub<=0?0:Math.round((S.tax.mode==='pct'?sub*S.tax.val/100:+S.tax.val)*100)/100;
+const taxLbl=()=>S.tax.mode==='pct'?`Sales tax (${S.tax.val}%)`:'Sales tax (flat)';
+
+/* ---------- money: one function feeds every report, payout and preview ---------- */
+function rev(ev){const r=Object.assign({},ev.base);S.sales.forEach(s=>{if(s.ev===ev.id)r[s.cat]+=s.amt});return r}
+function calc(ev,sp){sp=sp||S.split;const r=rev(ev),gross=r.door+r.bar+r.tables+r.hookah,fee=gross*sp.fee/100,k=1-sp.fee/100;
+  const promo=k*(r.door*sp.door+r.bar*sp.bar+r.tables*sp.tables+r.hookah*sp.hookah)/100,venue=gross-fee-promo;
+  const share=(who,cost,payer)=>ev.status==='upcoming'?0:payer==='split'?cost/2:payer===who?+cost:0;
+  const pc=share('promoter',sp.djCost,sp.dj)+share('promoter',sp.secCost,sp.sec)+share('promoter',sp.hostCost,sp.host),vc=share('venue',sp.djCost,sp.dj)+share('venue',sp.secCost,sp.sec)+share('venue',sp.hostCost,sp.host);
+  const tax=S.sales.reduce((a,s)=>a+(s.ev===ev.id?s.tax||0:0),0);
+  return {r,gross,fee,promo,venue,pc,vc,tax,promoNet:promo-pc,venueNet:venue-vc}}
+function recordSales(ev,list,tax){list.forEach((s,i)=>S.sales.push({ev,cat:s.cat,amt:s.amt,tax:i?0:tax||0}))}
+function cartOf(c,custom){const lines=[],by={};let sub=0;Object.keys(c).forEach(id=>{const it=S.menu.find(m=>m.id===id);if(!it||!c[id])return;const a=it.price*c[id];lines.push([c[id]+' × '+it.name,a]);by[it.cat]=(by[it.cat]||0)+a;sub+=a});
+  if(custom>0){lines.push(['Custom amount',custom]);by.bar=(by.bar||0)+custom;sub+=custom}
+  const tax=taxOf(sub);return {lines,sub,tax,total:sub+tax,sales:Object.keys(by).map(k=>({cat:k,amt:by[k]}))}}
+
+/* ---------- shared pieces ---------- */
+function statusTag(e){return e.status==='live'?'<span class="tag live">LIVE</span>':e.status==='closed'?'<span class="tag">Closed</span>':'<span class="tag ok">Upcoming</span>'}
+function crowdTag(v){const c=S.crowd[v.id];return `<span class="tag ${c>=80?'crit':c>=55?'warn':'ok'}">${c}% full</span>`}
+function tileItem(it,cart,act){const q=cart[it.id]||0;return `<button class="item" data-a="${act}" data-v="${it.id}"><span class="ph">${it.img?`<img src="${it.img}" alt="">`:ic(it.g)}</span>${q?`<span class="q">${q}</span>`:''}<span>${esc(it.name)}</span><b>${usd(it.price)}</b></button>`}
+function cartCard(c,clearAct){return `<div>${c.lines.map(l=>`<div class="kv"><span>${esc(l[0])}</span><b>${usd(l[1])}</b></div>`).join('')}<div class="kv"><span>${taxLbl()}</span><b>${usd(c.tax)}</b></div><div class="kv"><span><b>Total</b></span><b class="gold">${usd(c.total)}</b></div></div><button class="btn ghost sm" data-a="${clearAct}">Clear</button>`}
+function camBtn(f,label){return `<label class="btn full">${ic('qr')} ${label}<input type="file" accept="image/*" capture="environment" data-f="${f}"></label>`}
+function upBtn(f,label){return `<label class="btn ghost sm">${label}<input type="file" accept="image/*" data-f="${f}"></label>`}
+function evThumb(e){return e.img?`<img src="${e.img}" alt="${esc(e.name)} flyer">`:`<div class="art" style="--h:${V(e.venue).h}"></div>`}
+
+/* ---------- sign up ---------- */
+function onboard(){const o=S.ob;
+  if(o.step===0)return `<div class="art tall" style="--h:300;height:170px"><div class="over" style="inset:auto 14px 14px 14px;flex-direction:column;gap:4px"><span class="eyebrow" style="color:#fff">Tucson, Arizona</span><h1>The whole night in <em>one app</em></h1></div></div>
+   <div class="card"><h2>Log in</h2><label class="f" for="liC">Email or mobile number<input id="liC" type="text" data-m="liC" value="${esc(fv('liC',''))}" placeholder="you@example.com or 520 555 0100" autocomplete="username"></label>
+   <button class="btn full" data-a="login">Log in</button><button class="btn ghost full" data-a="loginGoogle">Log in with Google</button></div>
+   <button class="btn goldb full" data-a="toSignup">New here? Create an account</button>
+   <div class="note">Prototype sign-in. Google, email and text-message verification are not connected yet, so nothing is sent and there is no password.</div>`;
+  if(o.step===1)return `<div class="col g6"><span class="eyebrow">Create account</span><h1>How do you want to <em>sign up</em>?</h1></div>
+   <div class="col"><button class="btn full" data-a="via" data-v="Google">Sign up with Google</button><button class="btn ghost full" data-a="via" data-v="email">Sign up with email</button><button class="btn ghost full" data-a="via" data-v="phone">Sign up with phone number</button><button class="btn ghost sm" data-a="obBack">Back to log in</button></div>`;
+  if(o.step===2)return `<div class="col g6"><span class="eyebrow">Step 1 of 2</span><h1>Create your <em>account</em></h1></div>
+   <div class="card">${o.via==='Google'?'<div class="small dim">In the live app, Google opens here and fills this in for you.</div>':''}
+   <label class="f" for="obName">Your name</label><input id="obName" type="text" data-m="obName" value="${esc(fv('obName',''))}" placeholder="First and last name" autocomplete="name">
+   ${o.via==='phone'?`<label class="f" for="obC">Mobile number</label><input id="obC" type="tel" data-m="obC" value="${esc(fv('obC',''))}" placeholder="520 555 0100" autocomplete="tel">`:`<label class="f" for="obC">Email</label><input id="obC" type="email" data-m="obC" value="${esc(fv('obC',''))}" placeholder="you@example.com" autocomplete="email">`}
+   <label class="f" for="obDob">Date of birth</label><input id="obDob" type="date" data-m="obDob" value="${esc(fv('obDob',''))}" max="${iso(new Date())}" min="1920-01-01" autocomplete="bday"><div class="small dim">You must be 18 or older to join. Your profile shows 21+ or 18+ so door staff know which events you can enter.</div>
+   <button class="btn full" data-a="obNext">Continue</button><button class="btn ghost sm" data-a="obBack">Back</button></div>`;
+  return `<div class="col g6"><span class="eyebrow">Step 2 of 2</span><h1>Which side are <em>you</em> on?</h1></div>
+   ${[['member','Member','I go out. Find rooms, pay in the app, earn points.','Ready right away'],['promoter','Promoter','I post events, send codes, scan guests and track my payout.','Tucson Night Life verifies you first'],['owner','Venue owner','I run a venue: menu, payments, tax, splits and reports.','Tucson Night Life verifies you first'],['staff','Venue staff','I work the door, the bar or tables.','Added by your venue'],['dj','DJ','I take song requests and tips from the booth.','Added by your venue'],['sec','Security','I check ages and tickets at the door.','Added by your venue']].map(r=>`<button class="card" data-a="obRole" data-v="${r[0]}"><div class="row between"><h3>${r[1]}</h3><span class="tag ${r[0]==='member'?'ok':'warn'}">${r[3]}</span></div><div class="small dim">${r[2]}</div></button>`).join('')}`}
+function verifyScreen(r){const own=r==='owner',st=(S.user.ver||{})[r]||'none',ap=(S.user.app||{})[r]||{};
+  if(st==='pending')return `<div class="col g6"><span class="eyebrow">Verification</span><h1>We are <em>checking</em> your details</h1></div>
+   <div class="card"><span class="tag warn" style="align-self:flex-start">Pending review</span><div>Tucson Night Life reviews every ${own?'venue owner':'promoter'} before the ${own?'owner':'promoter'} dashboard opens. You get an alert the moment you are approved.</div>
+   <div><div class="kv"><span>${own?'Venue':'Promoter name'}</span><b>${esc(ap.name)}</b></div><div class="kv"><span>${own?'Address':'Instagram or site'}</span><b>${esc(ap.addr||'Not given')}</b></div><div class="kv"><span>${own?'License photo':'Venue you work with'}</span><b>${own?(ap.doc?'Attached':'Not attached'):esc(ap.venue||'Not given')}</b></div></div></div>
+   <button class="btn goldb full" data-a="verifyDemo" data-v="${r}">Demo: approve me now</button><button class="btn ghost full" data-a="role" data-v="member">Use the member side while I wait</button>`;
+  return `<div class="col g6"><span class="eyebrow">Verification</span><h1>${own?'Verify your <em>venue</em>':'Get verified as a <em>promoter</em>'}</h1></div>
+   <div class="card"><div class="small dim">${own?'Owners handle money and menus, so we confirm you run the venue before your dashboard opens.':'Promoters earn a cut of sales, so we confirm who you are and who you work with before your dashboard opens.'}</div>
+   <label class="f" for="vfName">${own?'Venue name':'Promoter or brand name'}<input id="vfName" type="text" data-m="vfName" value="${esc(fv('vfName',''))}" placeholder="${own?'OVIA Lounge':'K. Dot Presents'}"></label>
+   <label class="f" for="vfAddr">${own?'Venue address':'Instagram or website'}<input id="vfAddr" type="text" data-m="vfAddr" value="${esc(fv('vfAddr',''))}" placeholder="${own?'2449 N Stone Ave, Tucson':'@yourhandle'}"></label>
+   ${own?`<div class="row between"><span>Liquor or business license photo<div class="small dim">${S.form.vfDoc?'Photo attached':'Optional in this demo'}</div></span>${upBtn('doc',S.form.vfDoc?'Replace':'Upload')}</div>`:`<label class="f" for="vfVenue">Venue you promote for<input id="vfVenue" type="text" data-m="vfVenue" value="${esc(fv('vfVenue',''))}" placeholder="OVIA Lounge"></label>`}
+   <button class="btn full" data-a="verifySubmit" data-v="${r}">Send for verification</button><button class="btn ghost sm" data-a="role" data-v="member">Go to the member side instead</button></div>`}
+
+/* ---------- member ---------- */
+function venueCard(v){const live=v.id==='ovia';return `<div class="card" data-a="venue" data-v="${v.id}" role="button" tabindex="0">
+  <div class="art" style="--h:${v.h}"><div class="over">${live?'<span class="tag live">LIVE</span>':''}${crowdTag(v)}<span class="tag">${S.wait[v.id]?S.wait[v.id]+' min line':'No line'}</span><span class="tag">${v.cover?usd(v.cover)+' cover':'No cover'}</span></div></div>
+  <div class="row between"><div><h3>${v.name}</h3><div class="small dim">${v.area} · ${v.tags.join(' · ')}</div></div>${v.friends.length?`<div class="avs">${v.friends.map(f=>av(f)).join('')}</div>`:''}</div>
+  ${live?`<div class="small">${esc(S.liveMsg)}</div>`:`<div class="small gold">${v.deal}</div>`}
+  <div class="meter"><i style="width:${S.crowd[v.id]}%"></i></div></div>`}
+function mapView(list){return `<div class="map"><svg viewBox="0 0 100 78" aria-label="Simplified map of central Tucson, not to scale">
+  <g stroke="#2a2036" stroke-width="2.4" fill="none"><path d="M47 0V78M63 0V78M0 30H100M0 54H100M22 0V78M82 0V78M0 68H70"/></g>
+  <g fill="#6f5f80" font-size="2.6" font-family="sans-serif"><text x="48.5" y="5">Stone Ave</text><text x="64.5" y="5">4th Ave</text><text x="2" y="28.5">Speedway Blvd</text><text x="72" y="52.5">University Blvd</text><text x="2" y="66.5">Congress St</text></g></svg>
+  ${list.map(v=>`<button class="pin ${S.crowd[v.id]>=75?'hotp':''}" style="left:${v.x}%;top:${v.y*.9+4}%" data-a="venue" data-v="${v.id}" aria-label="${v.name}, ${S.crowd[v.id]} percent full">${S.crowd[v.id]}</button>`).join('')}</div>
+  <div class="note">Pins show how full each room is right now. Map is simplified and not to scale.</div>`}
+const M={
+tonight(){const fl=['All','Live now','No cover','Hookah','Hip-hop','Latin','Rooftop'];
+  const list=VENUES.filter(v=>S.filter==='All'||(S.filter==='Live now'?v.id==='ovia':v.tags.includes(S.filter)));
+  return `<div class="col g6"><span class="eyebrow">Monday in the Old Pueblo</span><h1>Where is it <em>going off</em> tonight?</h1></div>
+  <div class="chips">${fl.map(f=>`<button class="chip ${S.filter===f?'on':''}" data-a="filter" data-v="${f}">${f}</button>`).join('')}</div>
+  <div class="row between"><h2>Rooms right now</h2><button class="btn ghost sm" data-a="toggleMap">${S.mapOn?'Show list':'Show map'}</button></div>
+  ${S.mapOn?mapView(list):list.map(venueCard).join('')||'<div class="card dim">No rooms match that filter tonight.</div>'}
+  <h2>On the calendar</h2>
+  <div class="flyers">${ALL().filter(e=>e.status==='upcoming').map(e=>`<button class="flyer" data-a="event" data-v="${e.id}">${evThumb(e)}<div><h3>${esc(e.name)}</h3><div class="small dim">${esc(e.when)} · ${usd(e.door)}</div></div></button>`).join('')}</div>`},
+social(){const feed=S.posts.map((p,i)=>`<div class="card"><div class="row">${av(p.who)}<div><b>${esc(p.who)}</b><div class="small dim">at ${esc(p.at)} · ${p.t}</div></div></div><div>${esc(p.txt)}</div>
+   <div class="row"><button class="btn ghost sm" data-a="like" data-v="${i}">${S.liked.includes(i)?'Liked':'Like'} · ${p.likes+(S.liked.includes(i)?1:0)}</button><button class="btn ghost sm" data-a="venueByName" data-v="${esc(p.at)}">See the room</button></div></div>`).join('');
+  const board=[['Maya R.',6420],[me(),S.life],['Lexi P.',1510],['Tino G.',980]].sort((a,b)=>b[1]-a[1]).map((r,i)=>`<div class="kv" data-a="profile" data-v="${esc(r[0])}"><span>${i+1}. ${esc(r[0])}</span><b class="${r[0]===me()?'gold':''}">${num(r[1])} pts</b></div>`).join('');
+  const head=`<div class="col g6"><span class="eyebrow">Members only</span><h1>The <em>circle</em></h1></div>`;
+  if(!S.member)return head+`<div class="lock"><div class="col blur" aria-hidden="true">${feed}</div><div class="veil"><div class="card vip" style="width:100%"><h3>Join to see who is out tonight</h3><div class="small dim">The feed, friend check-ins, profiles and the points leaderboard are for paying members.</div><button class="btn goldb full" data-a="join">See membership · ${usd(S.memberPrice)} a month</button></div></div></div>`;
+  return head+`<div class="card"><div class="row between"><h2>Out right now</h2><span class="tag ok">6 friends</span></div>${VENUES.filter(v=>v.friends.length).map(v=>`<div class="row"><div class="avs">${v.friends.map(f=>av(f)).join('')}</div><button class="small" data-a="venue" data-v="${v.id}">${v.name}</button></div>`).join('')}<div class="small dim">Tap a face to open their profile.</div></div>
+  <div class="card"><label class="f" for="postTxt">Post to your circle</label><textarea id="postTxt" data-m="postTxt" placeholder="Where are you headed tonight?">${esc(fv('postTxt',''))}</textarea><div class="row"><select id="postAt" data-m="postAt" aria-label="Tag a venue">${VENUES.map(v=>`<option ${fv('postAt','')===v.name?'selected':''}>${v.name}</option>`).join('')}</select><button class="btn sm" data-a="post">Post</button></div></div>
+  ${feed}<div class="card"><h2>November leaderboard</h2><div>${board}</div><div class="small dim">Top 3 each month win a free VIP table.</div></div>`},
+scan(){const open=S.charges.filter(c=>c.status==='open');return `<div class="col g6"><span class="eyebrow">Scan</span><h1>Get scanned, <em>get points</em></h1></div>
+  <div class="pass">${qr('TNL:M:00417')}<div class="col g6"><b>${esc(me())} · 00417</b><div class="row wrap">${ageTag()}<span class="tag gold">${tier()} tier</span></div><div class="small dim">Staff scan this at the door or bar. You earn ${rate()} points per dollar${S.member?', double for members':''}.</div></div></div>
+  <div class="card"><h2>Pay a bartender's code</h2><div class="small dim">When the bartender shows a QR for your total, take a photo of it here and pay from your phone.</div>${camBtn('scan-member','Open camera and scan to pay')}
+   ${open.length?open.map(c=>`<div class="row between"><span>OVIA bar · ${usd(c.total)}<div class="small dim">${esc(c.lines.map(l=>l[0]).join(', '))}</div></span><button class="btn sm" data-a="payCharge" data-v="${c.id}">Pay</button></div>`).join(''):'<div class="small dim">No open bar codes waiting for you.</div>'}</div>
+  <div class="card"><h2>Points from scans</h2>${S.scans.length?S.scans.slice(0,6).map(s=>`<div class="kv"><span>${esc(s.what)}</span><b>${s.amt?usd(s.amt)+' ':''}<span class="gold">+${num(s.pts)} pts</span></b></div>`).join(''):'<div class="small dim">Nothing yet tonight. Your points land here the moment staff scan you.</div>'}</div>`},
+bar(){const c=cartOf(S.cart,0),mine=S.orders;return `<div class="col g6"><span class="eyebrow">You are at OVIA Lounge</span><h1>Tap to <em>order</em></h1></div>
+  <div class="grid3">${S.menu.map(it=>tileItem(it,S.cart,'add')).join('')}</div>
+  <div class="card"><div class="row between"><span><b>Bring it to my table</b><div class="small dim">${S.member?'A server brings your drinks or hookah to you.':'Table service is a member perk.'}</div></span>${S.member?`<button class="sw ${S.tblOn?'on':''}" data-a="tblToggle" role="switch" aria-checked="${S.tblOn}" aria-label="Bring it to my table"></button>`:`<button class="btn goldb sm" data-a="join">Join</button>`}</div>
+   ${S.member&&S.tblOn?`<label class="f" for="tblNo">Your table number<input id="tblNo" type="text" inputmode="numeric" maxlength="4" data-m="tblNo" value="${esc(fv('tblNo',''))}" placeholder="12"></label>${S.tickets.some(t=>t.table)?'<div class="small gold">You have a table reserved. The number is on the table stand.</div>':'<div class="small dim">The number is on the stand at your table.</div>'}`:''}</div>
+  ${c.sub?`<div class="card vip">${cartCard(c,'clearCart')}<button class="btn goldb full" data-a="checkout">Pay ${usd(c.total)} · earn ${num(c.sub*rate())} pts</button></div>`:'<div class="note">Tap what you want and pay in the app. Pick up at the bar with your order code, or have it brought to your table.</div>'}
+  <button class="btn ghost full" data-a="songSheet">${ic('music')} Request a song from the DJ</button>
+  ${S.djq.some(x=>x.by==='You')?`<div class="card"><h2>Your song requests</h2>${S.djq.filter(x=>x.by==='You').map(x=>`<div class="row between"><span class="grow"><b>${esc(x.song)}</b><div class="small dim">${x.st==='new'?'Waiting on the DJ':x.st==='skip'?'Not played':'Played by '+esc(x.playedBy||'the DJ')}${x.tip?' · '+usd(x.tip)+' bounty'+(ts(x)==='paid'?' paid':ts(x)==='void'?' cancelled':''):''}</div></span>${ts(x)==='due'?`<button class="btn goldb sm" data-a="payBounty" data-v="${x.id}">Pay ${usd(x.tip)}</button>`:`<span class="tag ${x.st==='played'?'ok':''}">${x.st==='new'?'Queued':x.st==='skip'?'Skipped':'Played'}</span>`}</div>`).join('')}</div>`:''}
+  ${mine.length?`<h2>Your orders</h2>${mine.map(o=>`<button class="card" data-a="order" data-v="${o.id}"><div class="row between"><h3>Order ${o.id} · ${usd(o.total)}</h3><span class="tag ${o.status!=='served'?'ok':''}">${o.table?(o.status==='paid'?'Sent to your server':o.status==='out'?'On the way':'Delivered')+' · table '+esc(o.table):o.status==='paid'?'Paid · show code':'Picked up'}</span></div><div class="small dim">${esc(o.lines.map(l=>l[0]).join(', '))}</div></button>`).join('')}`:''}`},
+rewards(){const n=nextTier();return `<div class="col g6"><span class="eyebrow">Points</span><div class="big gold">${num(S.points)}</div><div class="small dim">${tier()} tier · ${S.streak} weekend streak · ${rate()} points per dollar</div></div>
+  ${n?`<div class="card"><div class="row between small"><span>${num(n.at-S.life)} points to ${n.n}</span><span class="dim">${num(S.life)} lifetime</span></div><div class="meter goldm"><i style="width:${Math.min(100,(S.life-n.from)/(n.at-n.from)*100)}%"></i></div></div>`:''}
+  <h2>Spend your points</h2>
+  ${REWARDS.map(r=>`<div class="card"><div class="row between"><div><h3>${r.name}</h3><div class="small dim">${r.where}</div></div><button class="btn sm ${S.points>=r.cost?'goldb':'ghost'}" data-a="redeem" data-v="${r.id}" ${S.points>=r.cost?'':'disabled'}>${num(r.cost)} pts</button></div></div>`).join('')}
+  ${S.vouchers.length?`<h2>Your vouchers</h2>${S.vouchers.map((v,i)=>`<button class="card" data-a="voucher" data-v="${i}"><div class="row between"><h3>${v.name}</h3><span class="tag ${v.used?'':'ok'}">${v.used?'Used':'Ready to scan'}</span></div></button>`).join('')}`:''}
+  <div class="card"><h2>More ways to earn</h2><div><div class="kv"><span>Get scanned in at the door</span><b>+50</b></div><div class="kv"><span>Bring a friend who joins (code NIGHT417)</span><b>+500</b></div><div class="kv"><span>Rate your night the next morning</span><b>+25</b></div><div class="kv"><span>Three weekends in a row</span><b>+300</b></div></div></div>`},
+me(){return `<div class="row">${av(me(),'lg')}<div class="col g6"><h1 style="font-size:21px">${esc(me())}</h1><div class="row wrap">${ageTag()}<span class="tag gold">${tier()} tier</span><span class="tag">${S.member?'Member · renews Dec 9':'Free account'}</span></div></div></div>
+  ${S.member?'':`<button class="btn goldb full" data-a="join">Become a member · ${usd(S.memberPrice)} a month</button>`}
+  <button class="btn ghost full" data-a="tab" data-v="rewards">Rewards · ${num(S.points)} points</button>
+  <div class="card"><h2>Paid in the app</h2>${S.pays.length?S.pays.map(p=>`<div class="kv"><span>${esc(p.what)}<div class="small dim">${PAYN[p.method].replace(/ \(.*/,'')}${p.pts?' · +'+num(p.pts)+' pts':''}</div></span><b>${usd(p.total)} <span class="tag ok">Paid</span></b></div>`).join(''):'<div class="small dim">Tickets, drinks, hookah and membership you pay for in the app are listed here.</div>'}</div>
+  <div class="card"><h2>Tickets</h2>${S.tickets.length?S.tickets.map((t,i)=>`<button class="kv" data-a="ticket" data-v="${i}"><span>${esc(E(t.ev).name)} · ${t.qty} ${t.qty>1?'guests':'guest'}</span><b class="gold">${t.used?'Used':'Open'}</b></button>`).join(''):'<div class="small dim">No tickets yet. Pick an event on the Tonight tab.</div>'}</div>
+  <div class="card"><h2>Push notifications</h2>${Object.keys(NCATS).map(c=>`<div class="row between"><span>${NCATS[c]}</span><button class="sw ${S.mute[c]?'':'on'}" data-a="mute" data-v="${c}" role="switch" aria-checked="${!S.mute[c]}" aria-label="${NCATS[c]}"></button></div>`).join('')}<button class="btn ghost sm" data-a="testPush">Send me a test alert</button></div>
+  <div class="card"><h2>Get home safe</h2><div class="row between"><span>Share my night with a trusted contact<div class="small dim">Sends your check-ins and a 2 AM "made it home?" prompt.</div></span><button class="sw ${S.share?'on':''}" data-a="share" role="switch" aria-checked="${S.share}" aria-label="Share my night"></button></div>
+   <div class="row"><a class="btn ghost sm" href="https://m.uber.com/" target="_blank" rel="noopener">Uber</a><a class="btn ghost sm" href="https://www.lyft.com/rider" target="_blank" rel="noopener">Lyft</a></div></div>`}
+};
+
+/* ---------- staff tools shared by promoter, owner and staff ---------- */
+function scanScreen(title,extra,mode){const r=S.lastScan,wait=[];
+  if(mode!=='sec')S.orders.forEach(o=>{if(o.status==='paid'&&!o.table)wait.push([`Order ${o.id} · ${usd(o.total)}`,o.lines.map(l=>l[0]).join(', '),'TNL:O:'+o.id,'Validate'])});
+  S.tickets.forEach((t,i)=>{if(!t.used)wait.push([`Ticket · ${E(t.ev).name}`,t.qty+(t.qty>1?' guests':' guest'),'TNL:T:'+i,'Admit'])});
+  if(mode!=='sec')S.vouchers.forEach((v,i)=>{if(!v.used)wait.push(['Reward · '+v.name,v.where,'TNL:V:'+i,'Honor'])});
+  return `<div class="col g6"><span class="eyebrow">${title}</span><h1>Scan a <em>guest</em></h1></div>
+  <div class="card">${camBtn('scan-staff','Open camera and scan')}<div class="small dim">${mode==='sec'?'Takes a photo of the guest\'s code and shows their age band, or checks their ticket.':'Takes a photo of the guest\'s code and reads it: member pass, paid order, ticket or reward.'}</div><button class="btn ghost sm" data-a="demoScan" data-v="TNL:M:00417">Demo: scan member 00417</button></div>
+  ${r?`<div class="card ${r.ok?'good':'bad'}"><div class="row between"><h2>${esc(r.t)}</h2><span class="tag ${r.ok?'ok':'crit'}">${r.ok?'VALID':'STOP'}</span></div><div class="small">${esc(r.b)}</div></div>`:''}
+  ${S.scanMember&&mode==='sec'?`<div class="card ${ageBand()==='21+'?'good':'vip'}"><div class="row">${av(me())}<div class="grow"><b>${esc(me())} · member 00417</b><div class="small dim">${tier()} tier</div></div></div><div class="big" style="font-size:30px">${ageBand()||'Check ID'}</div><div class="small">${ageBand()==='21+'?'Cleared for every event and the bar.':ageBand()==='18+'?'18+ events only. No alcohol wristband.':'No birth date on this account. Check a physical ID.'}</div><div class="row"><button class="btn sm grow" data-a="doorIn">Admit · +50 pts</button><button class="btn ghost sm" data-a="scanDone">Done</button></div></div>`:S.scanMember?`<div class="card vip"><div class="row">${av(me())}<div class="grow"><b>${esc(me())} · member 00417 · ${ageBand()||'age not on file'}</b><div class="small dim">${tier()} tier · ${num(S.points)} pts · ${S.member?'paid member, double points':'free account'}</div></div></div>
+   <div class="two"><label class="f" for="saleCat">Sale type<select id="saleCat" data-m="saleCat">${Object.keys(CATS).map(c=>`<option value="${c}" ${fv('saleCat','bar')===c?'selected':''}>${CATS[c]}</option>`).join('')}</select></label><label class="f" for="saleAmt">Amount $<input id="saleAmt" type="number" inputmode="decimal" min="0" data-m="saleAmt" value="${esc(fv('saleAmt','28'))}"></label></div>
+   <button class="btn full" data-a="sale">Record sale and give points</button><div class="row"><button class="btn ghost sm grow" data-a="doorIn">Check in at door · +50 pts</button><button class="btn ghost sm" data-a="scanDone">Done</button></div></div>`:''}
+  <div class="card"><h2>Paid and waiting</h2>${wait.length?wait.map(w=>`<div class="row between"><span class="grow">${esc(w[0])}<div class="small dim">${esc(w[1])}</div></span><button class="btn sm" data-a="demoScan" data-v="${w[2]}">${w[3]}</button></div>`).join(''):'<div class="small dim">Nothing waiting. Paid orders, tickets and rewards show up here until they are scanned.</div>'}</div>${extra||''}`}
+function sellScreen(canEdit){const c=cartOf(S.scart,+S.custom||0);
+  return `<div class="col g6"><span class="eyebrow">OVIA Lounge · point of sale</span><h1>Tap to <em>sell</em></h1></div>
+  <div class="grid3">${S.menu.map(it=>tileItem(it,S.scart,'sadd')).join('')}</div>
+  <div class="row"><input type="number" inputmode="decimal" min="0" id="custAmt" data-m="custAmt" value="${esc(fv('custAmt',''))}" placeholder="Other amount $" aria-label="Other amount in dollars"><button class="btn ghost sm" data-a="addCustom">Add</button></div>
+  ${c.sub?`<div class="card vip">${cartCard(c,'clearS')}<button class="btn goldb full" data-a="mkCharge">Show QR for ${usd(c.total)}</button><button class="btn ghost full" data-a="cashSale">Paid in cash · record sale</button><div class="small dim">${S.scanMember?'Member 00417 is scanned in, so a cash sale gives them points.':'Scan the member first if a cash sale should earn points.'}</div></div>`:'<div class="note">Tap items to build the tab. Then show a QR the guest scans to pay, or record a cash sale.</div>'}
+  ${canEdit?`<div class="row between"><h2>Menu and prices</h2><button class="btn ghost sm" data-a="editMenu">${S.editMenu?'Done editing':'Edit menu'}</button></div>${S.editMenu?menuEditor():''}`:''}`}
+function menuEditor(){return `${S.menu.map(it=>`<div class="card"><div class="row"><span class="ph sm">${it.img?`<img src="${it.img}" alt="">`:ic(it.g)}</span><input type="text" data-s="menu.${it.id}.name" value="${esc(it.name)}" aria-label="Item name"><input type="number" inputmode="decimal" min="0" style="width:84px;flex:0 0 84px" data-s="menu.${it.id}.price" value="${it.price}" aria-label="Price in dollars"></div><div class="row">${upBtn(it.id,it.img?'Change photo':'Add photo')}<button class="btn ghost sm" data-a="delItem" data-v="${it.id}">Remove</button></div></div>`).join('')}
+  <div class="card vip"><h2>Add an item</h2><div class="two"><label class="f" for="niName">Name<input id="niName" type="text" data-m="niName" value="${esc(fv('niName',''))}" placeholder="Lemon drop"></label><label class="f" for="niPrice">Price $<input id="niPrice" type="number" inputmode="decimal" min="0" data-m="niPrice" value="${esc(fv('niPrice',''))}" placeholder="11"></label></div>
+  <label class="f" for="niCat">Counts toward<select id="niCat" data-m="niCat">${['bar','hookah','tables'].map(k=>`<option value="${k}" ${fv('niCat','bar')===k?'selected':''}>${CATS[k]} sales</option>`).join('')}</select></label>
+  ${S.form.itImg?`<img class="thumb" src="${S.form.itImg}" alt="New item photo">`:''}<div class="row">${upBtn('item',S.form.itImg?'Change photo':'Upload photo')}<button class="btn sm" data-a="addItem">Add to menu</button></div></div>`}
+function postEvents(by){const mine=S.events;return `<div class="card vip"><h2>Post an event</h2>
+  <label class="f" for="evName">Event name<input id="evName" type="text" data-m="evName" value="${esc(fv('evName',''))}" placeholder="Wildout Wednesday"></label>
+  <div class="two"><label class="f" for="evDate">Date<input id="evDate" type="date" data-m="evDate" min="${iso(new Date())}" value="${esc(fv('evDate',''))}"></label><label class="f" for="evDoor">Door price $<input id="evDoor" type="number" inputmode="decimal" min="0" data-m="evDoor" value="${esc(fv('evDoor','10'))}"></label></div>
+  <div class="two"><label class="f" for="evStart">Starts<input id="evStart" type="time" data-m="evStart" value="${esc(fv('evStart','22:00'))}"></label><label class="f" for="evEnd">Ends<input id="evEnd" type="time" data-m="evEnd" value="${esc(fv('evEnd','02:00'))}"></label></div>
+  <div class="two"><label class="f" for="evAge">Age<select id="evAge" data-m="evAge">${['21+','18+','18+ / 21+'].map(a=>`<option ${fv('evAge','21+')===a?'selected':''}>${a}</option>`).join('')}</select></label><label class="f" for="evCap">List spots<input id="evCap" type="number" inputmode="numeric" min="1" data-m="evCap" value="${esc(fv('evCap','120'))}"></label></div>
+  <label class="f" for="evNote">Details<textarea id="evNote" data-m="evNote" maxlength="140" placeholder="Dress code, specials, who is on the decks">${esc(fv('evNote',''))}</textarea></label>
+  ${S.form.evImg?`<img class="thumb" src="${S.form.evImg}" alt="Flyer preview">`:''}
+  <div class="row">${upBtn('ev',S.form.evImg?'Change flyer':'Upload flyer photo')}<button class="btn sm grow" data-a="postEvent" data-v="${by}">Post event</button></div><div class="small dim">Posts to the Tonight calendar and notifies ${by==='owner'?'OVIA followers':'your followers'}.</div></div>
+  ${mine.length?mine.map(e=>`<div class="card"><div class="row between"><h3>${esc(e.name)}</h3><button class="btn ghost sm" data-a="delEvent" data-v="${e.id}">Remove</button></div><div class="small dim">${esc(e.when)} · ${usd(e.door)} · posted by ${esc(e.promoter)}</div></div>`).join(''):''}`}
+function codesCard(){return `<div class="card"><h2>Discount codes</h2>${S.codes.map(c=>`<div class="row between"><span><b>${esc(c.code)}</b><div class="small dim">${c.pct?c.pct+'% off the door':'Credits the sale to you'}</div></span><button class="btn sm" data-a="sendCode" data-v="${esc(c.code)}">Send to followers</button></div>`).join('')}
+  <div class="two"><label class="f" for="cdCode">New code<input id="cdCode" type="text" data-m="cdCode" value="${esc(fv('cdCode',''))}" placeholder="KDOT10" autocapitalize="characters"></label><label class="f" for="cdPct">Percent off<input id="cdPct" type="number" inputmode="numeric" min="0" max="100" data-m="cdPct" value="${esc(fv('cdPct','10'))}"></label></div><button class="btn ghost sm" data-a="addCode">Create code</button></div>`}
+function blastCard(aud){return `<div class="card"><h2>Send an alert</h2><label class="f" for="blastT">Headline<input id="blastT" type="text" maxlength="48" data-m="blastT" value="${esc(fv('blastT','Doors are open at OVIA'))}"></label>
+  <label class="f" for="blastB">Message<textarea id="blastB" maxlength="140" data-m="blastB">${esc(fv('blastB','Free entry on the list until 11.'))}</textarea></label>
+  <label class="f" for="blastA">Send to<select id="blastA" data-m="blastA">${[aud,'Members only',"Everyone on tonight's guest list",'DJ booth'].map(a=>`<option ${fv('blastA',aud)===a?'selected':''}>${a}</option>`).join('')}</select></label>
+  <button class="btn full" data-a="blast">Send now</button><div class="small dim">Guests get a push banner. Choosing DJ booth sends it to the DJ's dashboard instead.</div></div>`}
+const WHO={venue:'Venue pays',promoter:'Promoter pays',split:'Split 50/50'};
+function dealState(){const sp=S.split;return sp.agreed?['gold','Agreed and locked']:!sp.sent?['warn',sp.by==='owner'?'Owner is drafting':'Promoter is drafting']:sp.by==='owner'?['warn','Offer sent · waiting on promoter']:['warn','Counter-offer sent · waiting on owner']}
+function terms(){const sp=S.split,d=dealState();
+  return `<div class="card ${sp.agreed?'vip':''}"><div class="row between"><h2>OVIA × K. Dot split</h2><span class="tag ${d[0]}">${d[1]}</span></div>
+  <div><div class="kv"><span>Door to promoter</span><b>${sp.door}%</b></div><div class="kv"><span>Bar to promoter</span><b>${sp.bar}%</b></div><div class="kv"><span>Tables to promoter</span><b>${sp.tables}%</b></div><div class="kv"><span>Hookah to promoter</span><b>${sp.hookah}%</b></div><div class="kv"><span>TNL platform fee</span><b>${sp.fee}%</b></div><div class="kv"><span>DJ (${usd(sp.djCost)})</span><b>${WHO[sp.dj]}</b></div><div class="kv"><span>Security (${usd(sp.secCost)})</span><b>${WHO[sp.sec]}</b></div><div class="kv"><span>Host (${usd(sp.hostCost)})</span><b>${WHO[sp.host]}</b></div></div>
+  <div class="small dim">${sp.agreed?'Both sides agreed. Payouts transfer on these terms.':'Last proposed by the '+(sp.by==='owner'?'venue owner':'promoter')+'.'}</div></div>`}
+function counterForm(){const c=S.counter,sl=(k,l,max)=>`<label class="f" for="cs-${k}"><span class="row between"><span>${l}</span><b id="cb-${k}" class="num" style="color:var(--text)">${c[k]}%</b></span><input type="range" id="cs-${k}" min="0" max="${max}" step="5" value="${c[k]}" data-i="counter" data-k="${k}"></label>`,
+  py=(k,l)=>`<label class="f" for="cp-${k}">${l}<select id="cp-${k}" data-s="counter.${k}">${Object.keys(WHO).map(o=>`<option value="${o}" ${c[k]===o?'selected':''}>${WHO[o]}</option>`).join('')}</select></label>`;
+  return `<div class="card vip"><h2>Your counter-offer</h2><div class="small dim">Set the share you want. The owner can agree or come back with new terms.</div>${sl('door','Door to you',100)}${sl('bar','Bar to you',50)}${sl('tables','Tables to you',50)}${sl('hookah','Hookah and food to you',50)}
+  <div class="two">${py('dj','DJ · '+usd(S.split.djCost))}${py('sec','Security · '+usd(S.split.secCost))}</div>${py('host','Host · '+usd(S.split.hostCost))}
+  <div id="counterPrev" class="small">${counterPrev()}</div><button class="btn goldb full" data-a="sendCounter">Send counter-offer to owner</button><button class="btn ghost sm" data-a="dropCounter">Cancel</button></div>`}
+function counterPrev(){const c=calc(E('hal'),Object.assign({},S.split,S.counter));return `On Halloween Haunt's ${usd(c.gross)} these terms would pay you <b class="gold">${usd(c.promoNet)}</b> and the venue ${usd(c.venueNet)}.`}
+function poutCard(k,who){const c=S.pout[k];return `<div class="card ${c.on?'good':''}"><div class="row between"><span><b>Stripe payouts</b><div class="small dim">${c.on?'Connected. '+who+' lands in your bank through Stripe.':'Connect Stripe so '+who.toLowerCase()+' can be sent to you.'}</div></span><button class="sw ${c.on?'on':''}" data-a="poutToggle" data-v="${k}" role="switch" aria-checked="${c.on}" aria-label="Stripe payouts"></button></div>
+  <input type="text" data-s="pout.${k}.id" value="${esc(c.id)}" placeholder="Stripe account email" aria-label="Stripe account email"><div class="small dim">Demo connection. The live app opens Stripe's own sign-up here.</div></div>`}
+function xferRows(e){const c=calc(e),sp=S.split,done=!!S.xfer[e.id],st=on=>!done?['','Not sent yet']:on?['ok','Sent']:['warn','Held · Stripe not connected'];
+  return [['OVIA Lounge (venue)',c.venueNet,st(S.payc.stripe.on)],['K. Dot (promoter)',c.promoNet,st(S.pout.promoter.on)],['DJ fee',+sp.djCost,st(S.pout.dj.on)],['Host pay',+sp.hostCost,st(S.pout.staff.on)],['Security',+sp.secCost,st(S.pout.sec.on)],['Tucson Night Life fee',c.fee,st(true)]]}
+function xferCard(e){if(e.status==='upcoming')return '';const done=!!S.xfer[e.id];
+  return `<div class="card ${done?'good':''}"><div class="row between"><h2>Transfers</h2><span class="tag ${done?'ok':S.split.agreed?'warn':'crit'}">${done?'Closed out':S.split.agreed?'Ready to send':'Needs agreed split'}</span></div>
+  <div>${xferRows(e).map(r=>`<div class="kv"><span>${r[0]}<div class="small"><span class="tag ${r[2][0]}">${r[2][1]}</span></div></span><b>${usd(r[1])}</b></div>`).join('')}</div>
+  ${done?'<div class="small dim">Held amounts send on their own as soon as that person connects Stripe.</div>':S.role==='owner'?`<button class="btn goldb full" data-a="transfer" data-v="${e.id}">${e.status==='live'?'Close out the night and transfer':'Transfer the split'}</button>`:'<div class="small dim">The venue owner closes out the night to send these.</div>'}</div>`}
+function myXfer(e,k){return e.status==='upcoming'?'After the event':!S.split.agreed?'Waiting on agreed split':!S.xfer[e.id]?'Waiting on owner close-out':S.pout[k].on?'Transferred to your Stripe':'Held · connect Stripe'}
+function splitPrev(){const c=calc(E('hal'));return `<div class="kv"><span>Gross sales</span><b>${usd(c.gross)}</b></div><div class="kv"><span>TNL platform fee</span><b>${usd(-c.fee)}</b></div><div class="kv"><span>Promoter share</span><b>${usd(c.promo)}</b></div><div class="kv"><span>Promoter costs</span><b>${usd(-c.pc)}</b></div><div class="kv"><span>Venue costs</span><b>${usd(-c.vc)}</b></div><div class="kv"><span><b>Promoter takes home</b></span><b class="gold">${usd(c.promoNet)}</b></div><div class="kv"><span><b>Venue takes home</b></span><b class="gold">${usd(c.venueNet)}</b></div>`}
+function evList(){return ALL().map(e=>{const c=calc(e);return `<button class="card" data-a="report" data-v="${e.id}"><div class="row between"><h3>${esc(e.name)}</h3>${statusTag(e)}</div><div class="row between"><span class="big" style="font-size:22px">${usd(c.gross)}</span><span class="small dim">${e.status==='upcoming'?e.rsvp+' RSVPs · presales':e.heads+' guests · '+usd(c.gross/Math.max(1,e.heads))+' a head'}</span></div><div class="small dim">${esc(e.when)}</div></button>`}).join('')}
+
+/* ---------- promoter ---------- */
+const PR={
+studio(){const live=E('ind'),c=calc(live);return `<div class="col g6"><span class="eyebrow">Promoter dashboard · K. Dot</span><h1>Your crowd. <em>Your cut.</em></h1></div>
+  <div class="tiles"><div class="tile"><b class="gold">${usd(c.promoNet)}</b><span>Tonight's payout so far</span></div><div class="tile"><b>${live.rsvp}</b><span>On your list tonight</span></div><div class="tile"><b>${S.inGuests.length+live.heads-3}</b><span>Checked in</span></div><div class="tile"><b>1,284</b><span>Followers</span></div></div>
+  <div class="card"><div class="row between"><h2>Your link</h2><span class="tag gold">KDOT</span></div><div class="row">${qr('https://tucsonnightlife.app/e/duel?ref=KDOT','s')}<div class="small dim">Guests who book with your code or scan this are credited to you.</div></div></div>
+  ${blastCard('My followers · 1,284')}`},
+events(){return `<div class="col g6"><span class="eyebrow">Events and codes</span><h1>Post it. <em>Fill it.</em></h1></div>${postEvents('promoter')}${codesCard()}<h2>All your events</h2>${evList()}`},
+scan(){return scanScreen('Door scanner',`<div class="card"><h2>Guest list · Industry Monday</h2>${GUESTS.map((g,i)=>`<div class="row between">${av(g)}<span class="grow">${g}<div class="small dim">${i%3===0?'Free pass':'Code KDOT'} · +${i%2+1}</div></span><button class="btn sm ${S.inGuests.includes(i)?'ghost':''}" data-a="checkGuest" data-v="${i}">${S.inGuests.includes(i)?'In':'Check in'}</button></div>`).join('')}</div>`)},
+sell(){return sellScreen(false)},
+payouts(){const sp=S.split;let tot=0;const rows=ALL().map(e=>{const c=calc(e);tot+=c.promoNet;return `<button class="card" data-a="report" data-v="${e.id}"><div class="row between"><h3>${esc(e.name)}</h3><b class="gold num">${usd(c.promoNet)}</b></div><div class="small dim">${usd(c.gross)} gross · share ${usd(c.promo)} · ${e.status==='upcoming'?'costs come out on the night':'costs '+usd(-c.pc)}</div><span class="tag ${myXfer(e,'promoter').indexOf('Transferred')===0?'ok':''}" style="align-self:flex-start">${myXfer(e,'promoter')}</span></button>`}).join('');
+  return `<div class="col g6"><span class="eyebrow">Money</span><div class="big gold">${usd(tot)}</div><div class="small dim">Your payouts across all events, updated with every scan and in-app sale</div></div>
+  ${poutCard('promoter','Your share of each event')}${terms()}
+  ${S.counter?counterForm():sp.agreed?'':sp.by==='owner'&&sp.sent?`<div class="row"><button class="btn goldb grow" data-a="agree">Agree</button><button class="btn ghost grow" data-a="decline">Decline and counter</button></div>`:sp.by==='promoter'&&sp.sent?`<button class="btn ghost full" data-a="decline">Change my counter-offer</button>`:`<button class="btn ghost full" data-a="decline">Propose my own terms</button>`}
+  <h2>By event</h2>${rows}`}
+};
+
+/* ---------- owner ---------- */
+const OW={
+live(){const e=E('ind'),c=calc(e),v=V('ovia');return `<div class="col g6"><span class="eyebrow">Owner dashboard · OVIA Lounge</span><div class="big">${usd(c.gross)}</div><div class="small dim">Industry Monday so far · ${e.heads+S.inGuests.length-3} through the door · ${usd(c.gross/Math.max(1,e.heads))} per head</div></div>
+  <div class="card">${Object.keys(CATS).map(k=>`<div class="hb"><span>${CATS[k]}</span><div class="meter"><i style="width:${c.gross?c.r[k]/c.gross*100:0}%"></i></div><b>${usd(c.r[k])}</b></div>`).join('')}</div>
+  <div class="tiles"><div class="tile"><b class="gold">${usd(c.venueNet)}</b><span>Venue keeps</span></div><div class="tile"><b>${usd(c.promoNet)}</b><span>Promoter payout</span></div></div>
+  <div class="card"><div class="row between"><h2>How full is the room?</h2><b id="capLbl" class="num">${S.crowd.ovia}% · ${Math.round(S.crowd.ovia*v.cap/100)} of ${v.cap}</b></div><input type="range" min="0" max="100" value="${S.crowd.ovia}" data-i="cap" id="capR" aria-label="Capacity filled">
+   <label class="f" for="waitS">Line wait<select id="waitS" data-s="wait.ovia">${[0,5,10,15,25,40].map(w=>`<option value="${w}" ${S.wait.ovia===w?'selected':''}>${w?w+' minutes':'No line'}</option>`).join('')}</select></label></div>
+  <div class="card"><label class="f" for="liveT">Live update on your venue card<textarea id="liveT" maxlength="120" data-m="liveT">${esc(fv('liveT',S.liveMsg))}</textarea></label><button class="btn full" data-a="liveUpdate">Update and notify members</button></div>
+  ${blastCard('All OVIA followers · 3,912')}`},
+events(){return `<div class="col g6"><span class="eyebrow">Events</span><h1>What each night <em>did</em></h1></div>${evList()}${postEvents('owner')}`},
+sell(){return sellScreen(true)},
+money(){const sp=S.split,sl=(k,l,max)=>`<label class="f" for="sl-${k}"><span class="row between"><span>${l}</span><b id="lb-${k}" class="num" style="color:var(--text)">${sp[k]}%</b></span><input type="range" id="sl-${k}" min="0" max="${max}" step="${k==='fee'?1:5}" value="${sp[k]}" data-i="split" data-k="${k}"></label>`,
+  cost=(k,ck,l)=>`<div class="two"><label class="f" for="c-${ck}">${l} pay $<input id="c-${ck}" type="number" inputmode="decimal" min="0" data-s="split.${ck}" value="${sp[ck]}"></label><label class="f" for="p-${k}">Who pays<select id="p-${k}" data-s="split.${k}">${[['venue','Venue'],['promoter','Promoter'],['split','Split 50/50']].map(o=>`<option value="${o[0]}" ${sp[k]===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></label></div>`;
+  const by={};let tx=0;S.pays.forEach(p=>{by[p.method]=(by[p.method]||0)+p.total});S.sales.forEach(s=>tx+=s.tax||0);
+  return `<div class="col g6"><span class="eyebrow">Money settings</span><h1>Payments, tax and <em>splits</em></h1></div>
+  <div class="card"><h2>How guests can pay</h2>${Object.keys(PAYN).map(k=>`<div class="col g6"><div class="row between"><b>${PAYN[k].replace(/ \(.*/,'')}${k==='stripe'?' · Stripe':''}</b><button class="sw ${S.payc[k].on?'on':''}" data-a="payToggle" data-v="${k}" role="switch" aria-checked="${S.payc[k].on}" aria-label="${PAYN[k]}"></button></div><input type="text" data-s="payc.${k}.id" value="${esc(S.payc[k].id)}" placeholder="${{stripe:'Stripe account ID',cashapp:'$cashtag',venmo:'@venmo-handle',zelle:'Zelle email or phone'}[k]}" aria-label="${PAYN[k]} account"></div>`).join('')}
+   <div class="note">Demo connections. Stripe would run cards, Apple Pay, Google Pay and Cash App Pay. Venmo and Zelle are shown as pay-to-handle with staff confirming the transfer.</div></div>
+  <div class="card"><h2>Membership</h2><label class="f" for="mpV">Price per month $<input id="mpV" type="number" inputmode="decimal" min="0" step="1" data-s="memberPrice" value="${S.memberPrice}"></label><div class="small dim">Guests see ${usd(S.memberPrice)} a month when they join. Members get the social feed, double points, no service fees and table service.</div></div>
+  <div class="card"><h2>Sales tax</h2><div class="two"><label class="f" for="taxV">Amount<input id="taxV" type="number" inputmode="decimal" min="0" step="0.1" data-s="tax.val" value="${S.tax.val}"></label><label class="f" for="taxM">Charged as<select id="taxM" data-s="tax.mode"><option value="pct" ${S.tax.mode==='pct'?'selected':''}>% of the sale</option><option value="flat" ${S.tax.mode==='flat'?'selected':''}>$ per order</option></select></label></div><div class="small dim">Added to drinks, hookah and bottle orders paid in the app. Example: a $20 order becomes ${usd(20+taxOf(20))}. Tax is held aside and never split.</div></div>
+  <div class="card"><div class="row between"><h2>Promoter share of sales</h2><span class="tag ${dealState()[0]}">${dealState()[1]}</span></div>${sp.by==='promoter'&&sp.sent&&!sp.agreed?'<div class="small gold">K. Dot declined your offer and sent these terms back. Agree below, or change anything to counter.</div>':''}${sl('door','Door',100)}${sl('bar','Bar',50)}${sl('tables','Tables',50)}${sl('hookah','Hookah and food',50)}${sl('fee','TNL platform fee, off the top',15)}</div>
+  <div class="card"><h2>DJ, security and host pay</h2>${cost('dj','djCost','DJ')}${cost('sec','secCost','Security')}${cost('host','hostCost','Host')}</div>
+  <div class="card"><div class="row between"><span><b>Let guests post tip bounties for the DJ</b><div class="small dim">A guest pledges a tip with a song request and pays only after the DJ confirms it was played. Tips go to the DJ and stay out of the split.</div></span><button class="sw ${S.djTipsOn?'on':''}" data-a="djTipsToggle" role="switch" aria-checked="${S.djTipsOn}" aria-label="Let guests tip the DJ"></button></div>${S.djTipsOn?`<label class="f" for="tipMin">Smallest bounty $<input id="tipMin" type="number" inputmode="decimal" min="0" step="1" data-s="djTipMin" value="${S.djTipMin}"></label>`:''}</div>
+  <div class="card vip"><h2>Preview on Halloween Haunt</h2><div id="splitPrev">${splitPrev()}</div></div>
+  ${sp.agreed?'<div class="card good"><h2>Split agreed by both sides</h2><div class="small">Close out an event under Events to transfer everyone\'s share.</div></div>':sp.by==='promoter'&&sp.sent?'<button class="btn goldb full" data-a="agree">Agree to the promoter\'s terms</button>':sp.sent?'<button class="btn ghost full" disabled>Offer sent · waiting on promoter</button>':'<button class="btn goldb full" data-a="offerSend">Send this offer to the promoter</button>'}
+  <div class="card"><h2>Collected in the app</h2>${Object.keys(by).length?Object.keys(by).map(k=>`<div class="kv"><span>${PAYN[k].replace(/ \(.*/,'')}</span><b>${usd(by[k])}</b></div>`).join(''):'<div class="small dim">No in-app payments yet.</div>'}<div class="kv"><span>Sales tax held</span><b>${usd(tx)}</b></div></div>
+  <div class="note">Changing any split or cost reopens the deal: you send the new offer and the promoter agrees or counters.</div>`},
+scan(){return scanScreen('Owner scanner')}
+};
+
+/* ---------- staff: host, bartender, server ---------- */
+const ST={
+scan(){return scanScreen('Host and bartender scanner')},
+sell(){return sellScreen(false)},
+orders(){const o=S.orders.filter(x=>!x.table),tb=S.orders.filter(x=>x.table),ch=S.charges;return `<div class="col g6"><span class="eyebrow">Bar and floor tickets</span><h1>Orders and <em>codes</em></h1></div>
+  <div class="card ${tb.some(x=>x.status!=='served')?'vip':''}"><h2>Table service</h2>${tb.length?tb.map(x=>`<div class="row between"><span class="grow"><b>Table ${esc(x.table)}</b> · order ${x.id} · ${usd(x.total)}<div class="small dim">${esc(x.lines.map(l=>l[0]).join(', '))} · paid in the app</div></span>${x.status==='paid'?`<button class="btn goldb sm" data-a="tblTake" data-v="${x.id}">Take it</button>`:x.status==='out'?`<button class="btn sm" data-a="tblDone" data-v="${x.id}">Delivered</button>`:'<span class="tag">Delivered</span>'}</div>`).join(''):'<div class="small dim">No table orders yet. Members at a table order from their phone and it lands here with the table number.</div>'}</div>
+  <div class="card"><h2>Paid in the app</h2>${o.length?o.map(x=>`<div class="row between"><span class="grow">Order ${x.id} · ${usd(x.total)}<div class="small dim">${esc(x.lines.map(l=>l[0]).join(', '))}</div></span>${x.status==='paid'?`<button class="btn sm" data-a="demoScan" data-v="TNL:O:${x.id}">Validate</button>`:'<span class="tag">Picked up</span>'}</div>`).join(''):'<div class="small dim">No app orders yet.</div>'}</div>
+  <div class="card"><h2>QR tabs you created</h2>${ch.length?ch.map(x=>`<button class="row between" data-a="charge" data-v="${x.id}" style="width:100%;text-align:left"><span class="grow">${usd(x.total)}<div class="small dim">${esc(x.lines.map(l=>l[0]).join(', '))}</div></span><span class="tag ${x.status==='paid'?'ok':'warn'}">${x.status==='paid'?'Paid':'Waiting'}</span></button>`).join(''):'<div class="small dim">None yet. Build a tab on the Sell screen.</div>'}</div>`},
+pay(){return payScreen('staff','Host pay','hostCost')}
+};
+
+function payScreen(k,label,ck){const evs=ALL().filter(e=>e.status!=='upcoming');return `<div class="col g6"><span class="eyebrow">${label}</span><div class="big gold">${usd(S.split[ck])}</div><div class="small dim">Per event, set by the venue owner</div></div>
+  ${poutCard(k,'Your pay for each night')}
+  <div class="card"><h2>Your nights</h2>${evs.map(e=>`<div class="kv"><span>${esc(e.name)}<div class="small dim">${esc(e.when)}</div></span><b>${usd(S.split[ck])}<div><span class="tag ${myXfer(e,k).indexOf('Transferred')===0?'ok':''}">${myXfer(e,k)}</span></div></b></div>`).join('')}</div>`}
+const SEC={door(){return scanScreen('Security · door check','','sec')},pay(){return payScreen('sec','Security pay','secCost')}};
+
+/* ---------- DJ: requests, alerts and tips only ---------- */
+const ts=x=>x.tipSt||(x.tip?'pledged':'none');
+const tipSum=k=>S.djq.reduce((a,x)=>a+(ts(x)===(k||'paid')?x.tip||0:0),0);
+const myDue=()=>S.djq.find(x=>x.by==='You'&&ts(x)==='due');
+const tipTag=x=>!x.tip?'':`<span class="tag ${ts(x)==='paid'?'ok':ts(x)==='due'?'warn':ts(x)==='void'?'':'gold'}">${usd(x.tip)} ${{pledged:'bounty if played',due:'owed, waiting on guest',paid:'tip paid',void:'bounty cancelled'}[ts(x)]}</span>`;
+const DJ={
+booth(){const q=S.djq.slice().sort((a,b)=>(a.st==='new'?0:1)-(b.st==='new'?0:1)||(b.tip||0)-(a.tip||0));return `<div class="col g6"><span class="eyebrow">DJ booth · OVIA Lounge</span><h1>Requests and <em>bounties</em></h1></div>
+  <div class="tiles"><div class="tile"><b>${q.filter(x=>x.st==='new').length}</b><span>Waiting requests</span></div><div class="tile"><b class="gold">${usd(tipSum('pledged'))}</b><span>Bounties on the table</span></div></div>
+  ${S.djmsgs.length?`<div class="card vip"><h2>Alerts from the venue</h2>${S.djmsgs.map(m=>`<div><b>${esc(m.t)}</b><div class="small dim">${esc(m.b)} · from ${esc(m.from)}</div></div>`).join('')}<button class="btn ghost sm" data-a="djClear">Clear alerts</button></div>`:''}
+  <div class="card"><h2>Song requests</h2>${q.length?q.map(x=>`<div class="row between">${av(x.by==='You'?me():x.by)}<span class="grow"><b>${esc(x.song)}</b><div class="small dim">${esc(x.by==='You'?me():x.by)}${x.note?' · '+esc(x.note):''}</div>${tipTag(x)}</span>${x.st==='new'?`<button class="btn sm" data-a="djPlay" data-v="${x.id}">I played it</button><button class="btn ghost sm" data-a="djSkip" data-v="${x.id}">Skip</button>`:`<span class="tag ${x.st==='skip'?'':'ok'}">${x.st==='skip'?'Skipped':'Played'}</span>`}</div>`).join(''):'<div class="small dim">No requests yet.</div>'}<div class="small dim">Biggest bounty sits at the top. Tap "I played it" after the song and the guest is asked to pay you. Skipping cancels the bounty.</div></div>`},
+tips(){const t=S.djq.filter(x=>x.tip);return `<div class="col g6"><span class="eyebrow">Your tips</span><div class="big gold">${usd(tipSum('paid'))}</div><div class="small dim">Paid tonight · ${usd(tipSum('due'))} owed by guests · ${usd(tipSum('pledged'))} still to play for</div></div>
+  <div class="card">${t.length?t.map(x=>`<div class="kv"><span>${esc(x.song)}<div class="small dim">${esc(x.by==='You'?me():x.by)}</div></span>${tipTag(x)}</div>`).join(''):'<div class="small dim">No bounties yet tonight.</div>'}</div>
+  ${poutCard('dj','Your DJ fee and tips')}
+  <div class="card"><h2>Your DJ fee</h2>${ALL().filter(e=>e.status!=='upcoming').map(e=>`<div class="kv"><span>${esc(e.name)}</span><b>${usd(S.split.djCost)}<div><span class="tag ${myXfer(e,'dj').indexOf('Transferred')===0?'ok':''}">${myXfer(e,'dj')}</span></div></b></div>`).join('')}</div>
+  <div class="note">Tips are yours and stay out of the venue and promoter split. A guest who owes you cannot post another bounty until they pay.</div>
+  ${S.djTipsOn?'':'<div class="card bad">The venue owner has switched off tip bounties for song requests.</div>'}`}
+};
+
+/* ---------- sheets ---------- */
+const SH={
+venue(id){const v=V(id),live=id==='ovia',inn=S.checkins.includes(id);return `<div class="art tall" style="--h:${v.h}"><div class="over">${live?'<span class="tag live">LIVE</span>':''}${v.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div></div>
+  <div class="row between"><div><h1 style="font-size:21px">${v.name}</h1><div class="small dim">${v.addr==='Sample venue'?v.area+' · sample venue':v.addr+', Tucson'} · ${v.open}</div></div><button class="btn ghost sm" data-a="fav" data-v="${id}">${S.favs.includes(id)?'Saved':'Save'}</button></div>
+  ${live?`<div class="card"><span class="eyebrow">Live update</span>${esc(S.liveMsg)}</div>`:''}
+  <div class="tiles"><div class="tile"><b>${S.crowd[id]}%</b><span>of ${v.cap} capacity</span></div><div class="tile"><b>${S.wait[id]?S.wait[id]+' min':'None'}</b><span>Line at the door</span></div><div class="tile"><b>${v.cover?usd(v.cover):'Free'}</b><span>Cover tonight</span></div><div class="tile"><b>${v.friends.length}</b><span>Friends here now</span></div></div>
+  ${v.friends.length?`<div class="row"><div class="avs">${v.friends.map(f=>av(f)).join('')}</div><span class="small dim">${v.friends.join(', ')}</span></div>`:''}
+  <div class="card vip"><span class="eyebrow" style="color:var(--gold)">Tonight's deal</span>${v.deal}</div>
+  <button class="btn full" data-a="checkin" data-v="${id}" ${inn?'disabled':''}>${inn?'Checked in':'Check in · +50 points'}</button>
+  ${live?`<div class="row"><button class="btn ghost sm grow" data-a="goBar">Order drinks or hookah</button><button class="btn ghost sm grow" data-a="songSheet">Request a song</button></div><button class="btn ghost sm" data-a="event" data-v="ind">Pay the door and reserve a table</button>`:''}
+  <div class="row"><a class="btn ghost sm grow" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(v.partner?v.addr+' Tucson AZ':v.area+' Tucson AZ')}" target="_blank" rel="noopener">Directions</a><a class="btn ghost sm grow" href="https://m.uber.com/" target="_blank" rel="noopener">Ride there</a></div>`},
+event(id){const e=E(id),v=V(e.venue),b=S.bk,q=bookQuote(e),going=S.going.includes(id);
+  return `${e.img?`<img src="${e.img}" alt="${esc(e.name)} flyer" style="width:100%;max-height:300px;object-fit:cover;object-position:top;border-radius:14px">`:`<div class="art" style="--h:${v.h}"><div class="over">${statusTag(e)}</div></div>`}
+  <div><h1 style="font-size:21px">${esc(e.name)}</h1><div class="small dim">${esc(e.when)} · ${v.name}, ${v.addr} · ${e.age} · posted by ${esc(e.promoter)}</div>${e.note?`<div class="small gold">${esc(e.note)}</div>`:''}</div>
+  <div class="row between"><div class="row"><div class="avs">${av('Maya R.')}${av('Dre T.')}${av('Lexi P.')}</div><span class="small dim">${e.rsvp+(going?1:0)} going</span></div><button class="btn sm ${going?'ghost':''}" data-a="going" data-v="${id}">${going?'You are going':'I am going'}</button></div>
+  <div class="card"><div class="row between"><span>Guests</span><div class="step"><button data-a="qty" data-v="-1" aria-label="Fewer guests">−</button><b class="num">${b.qty}</b><button data-a="qty" data-v="1" aria-label="More guests">+</button></div></div>
+   <div class="row between"><span>Reserve a table<div class="small dim">$100 deposit toward your tab</div></span><button class="sw ${b.table?'on':''}" data-a="bopt" data-v="table" role="switch" aria-checked="${b.table}" aria-label="Reserve a table"></button></div>
+   <div class="row between"><span>Split the total with my group</span><button class="sw ${b.splitTab?'on':''}" data-a="bopt" data-v="splitTab" role="switch" aria-checked="${b.splitTab}" aria-label="Split the total"></button></div>
+   <label class="f" for="promo">Discount or promoter code</label><div class="row"><input id="promo" type="text" data-m="promo" value="${esc(fv('promo','KDOT'))}" autocomplete="off" autocapitalize="characters"><button class="btn ghost sm" data-a="noop">Apply</button></div></div>
+  <div><div class="kv"><span>Door × ${b.qty}</span><b>${usd(q.door)}</b></div>${q.disc?`<div class="kv"><span>Code ${esc(q.code)} · ${q.pct}% off</span><b>${usd(-q.disc)}</b></div>`:''}${b.table?'<div class="kv"><span>Table deposit</span><b>$100</b></div>':''}<div class="kv"><span>Service fee</span><b>${q.fee?usd(q.fee):'Waived for members'}</b></div><div class="kv"><span><b>Total</b></span><b>${usd(q.total)}${b.splitTab&&b.qty>1?` · ${usd(q.total/b.qty)} each`:''}</b></div><div class="kv"><span>You will earn</span><b class="gold">+${num(q.sub*rate())} pts</b></div></div>
+  <button class="btn full" data-a="book" data-v="${id}">Pay and get my QR ticket</button>`},
+pay(){const p=S.pending;if(!p)return '';const ms=methods(),m=ms.includes(p.method)?p.method:ms[0];
+  return `<span class="eyebrow">Checkout</span><h1 style="font-size:21px">${esc(p.label)}</h1>
+  <div>${p.lines.map(l=>`<div class="kv"><span>${esc(l[0])}</span><b>${usd(l[1])}</b></div>`).join('')}<div class="kv"><span><b>Total</b></span><b class="gold">${usd(p.total)}</b></div></div>
+  ${ms.length?`<div class="col g6">${ms.map(k=>`<button class="card ${k===m?'vip':''}" data-a="method" data-v="${k}" style="padding:12px"><div class="row between"><b>${PAYN[k]}</b><span class="tag ${k===m?'gold':''}">${k===m?'Selected':'Use'}</span></div>${k!=='stripe'&&S.payc[k].id?`<div class="small dim">Pays ${esc(S.payc[k].id)}</div>`:''}</button>`).join('')}</div>
+  <button class="btn goldb full" data-a="payNow">Pay ${usd(p.total)}</button>${m==='zelle'||m==='venmo'?'<div class="note">Staff confirm this transfer on their side before your order is released.</div>':''}`:'<div class="card bad">This venue has not switched on a payment method yet. The owner does that under Money.</div>'}
+  <div class="note">Demo checkout. No money moves and no card is charged.</div>`},
+order(id){const o=S.orders.find(x=>x.id===id),paid=o.status==='paid',items=`<div>${o.lines.map(l=>`<div class="row between small"><span>${esc(l[0])}</span><span>${usd(l[1])}</span></div>`).join('')}<div class="row between"><b>Total paid</b><b>${usd(o.total)}</b></div></div>`;
+  if(o.table)return `<div class="ticket" style="${o.status==='served'?'filter:saturate(.35)':''}"><div class="row between"><b style="font:800 13px var(--display)">OVIA LOUNGE · TABLE SERVICE</b><span class="stamp ${o.status==='served'?'used':''}">${o.status==='served'?'DELIVERED':'PAID'}</span></div><h1 style="font-size:20px">Table ${esc(o.table)} · order ${o.id}</h1>${items}
+   <div class="row" style="gap:6px">${[['paid','Sent'],['out','On the way'],['served','Delivered']].map((x,i)=>`<span class="grow" style="text-align:center;padding:8px 4px;border-radius:9px;font:700 11px var(--body);background:${['paid','out','served'].indexOf(o.status)>=i?'#fff':'#ffffff33'};color:${['paid','out','served'].indexOf(o.status)>=i?'#a01458':'#fff'}">${x[1]}</span>`).join('')}</div>
+   <div class="small" style="text-align:center">${o.status==='paid'?'Your server has the order. Stay at your table.':o.status==='out'?'Your server is bringing it over now.':'Delivered to your table.'}</div></div>`;
+  return `<div class="ticket" style="${paid?'':'filter:saturate(.35)'}"><div class="row between"><b style="font:800 13px var(--display)">OVIA LOUNGE · BAR</b><span class="stamp ${paid?'':'used'}">${paid?'PAID':'PICKED UP'}</span></div><h1 style="font-size:20px">Order ${o.id}</h1>${items}${qr('TNL:O:'+o.id)}<div class="small" style="text-align:center">${paid?'Show the bartender. They scan it once and hand over your order.':'This code has been used.'}</div></div>`},
+charge(id){const c=S.charges.find(x=>x.id===id),paid=c.status==='paid';return `<span class="eyebrow">Show this to the guest</span><div class="row between"><div class="big">${usd(c.total)}</div><span class="tag ${paid?'ok':'warn'}">${paid?'PAID':'Waiting for payment'}</span></div>
+  <div>${c.lines.map(l=>`<div class="kv"><span>${esc(l[0])}</span><b>${usd(l[1])}</b></div>`).join('')}<div class="kv"><span>${taxLbl()}</span><b>${usd(c.tax)}</b></div></div>
+  ${paid?'<div class="card good"><h2>Payment received</h2><div class="small">Hand over the order. The sale is on tonight\'s report and the guest has their points.</div></div>':qr('TNL:C:'+c.id)+`<div class="small dim" style="text-align:center">The guest opens Scan in their app, photographs this code and pays.</div><button class="btn ghost full" data-a="payCharge" data-v="${c.id}">Demo: pay as the guest</button>`}`},
+ticket(i){const t=S.tickets[i],e=E(t.ev),v=V(e.venue);return `<div class="ticket"><div class="row between"><b style="font:800 13px var(--display)">TUCSON NIGHT LIFE</b><span class="small">${esc(e.when)}</span></div><h1 style="font-size:20px">${esc(e.name)}</h1>
+  <div class="small">${v.name}<br>${v.addr}, Tucson, AZ</div><div class="row between"><span>${t.qty} ${t.qty>1?'guests':'guest'}${t.table?' · table':''} · ${usd(t.total)}</span><span class="stamp ${t.used?'used':''}">${t.used?'ADMITTED':'PAID'}</span></div>${qr('TNL:T:'+i)}<div class="small" style="text-align:center">Door staff scan this once. Credited to ${esc(t.code||'the house')}.</div></div>`},
+voucher(i){const v=S.vouchers[i];return `<div class="ticket" style="background:linear-gradient(160deg,#e9a020,#ff2d7a)"><div class="row between"><b style="font:800 13px var(--display)">REWARD</b><span class="stamp ${v.used?'used':''}">${v.used?'USED':'READY'}</span></div><h1 style="font-size:20px">${v.name}</h1><div class="small">${v.where} · valid 30 days</div>${qr('TNL:V:'+i)}<div class="small" style="text-align:center">Show the bartender or door staff.</div></div>`},
+join(){return `<span class="eyebrow" style="color:var(--gold)">OVIA Lounge membership</span><h1>Own the <em>night</em></h1>
+  <div class="card vip"><div class="row between"><span class="big gold">${usd(S.memberPrice)}</span><span class="dim">a month · cancel anytime</span></div>
+  <div><div class="kv"><span>Members-only social feed and profiles</span><b>✓</b></div><div class="kv"><span>Double points on every scan and order</span><b>✓</b></div><div class="kv"><span>Cover waived at OVIA before 11 PM</span><b>✓</b></div><div class="kv"><span>No service fees on tickets and tables</span><b>✓</b></div><div class="kv"><span>First access to guest lists and tables</span><b>✓</b></div><div class="kv"><span>Table service: drinks and hookah brought to you</span><b>✓</b></div></div></div>
+  <button class="btn goldb full" data-a="payMember">Continue to payment</button>`},
+song(){const tip=+S.form.sgTip||0,on=S.djTipsOn,due=myDue();return `<span class="eyebrow">OVIA Lounge · DJ booth</span><h1 style="font-size:21px">Request a <em>song</em></h1>
+  <label class="f" for="sgSong">Song and artist<input id="sgSong" type="text" data-m="sgSong" value="${esc(fv('sgSong',''))}" placeholder="Song title, artist" maxlength="80"></label>
+  <label class="f" for="sgNote">Shout-out for the DJ, optional<input id="sgNote" type="text" data-m="sgNote" value="${esc(fv('sgNote',''))}" placeholder="It is Maya's birthday at booth 4" maxlength="80"></label>
+  ${!on?'':due?`<div class="card bad"><h2>Pay your last bounty first</h2><div class="small"><b>${esc(due.song)}</b><br>Played by ${esc(due.playedBy||'the DJ')}. Pay the ${usd(due.tip)} tip to post another bounty.</div><button class="btn goldb full" data-a="payBounty" data-v="${due.id}">Pay ${usd(due.tip)} tip</button></div>`:
+  `<div class="card vip"><h2>Put a tip bounty on it</h2><div class="row wrap">${[0,2,5,10,20].filter(a=>!a||a>=S.djTipMin).map(a=>`<button class="chip ${tip===a?'on':''}" data-a="tipSet" data-v="${a}">${a?usd(a):'No bounty'}</button>`).join('')}</div>
+   <label class="f" for="sgTip">Or type an amount $<input id="sgTip" type="number" inputmode="decimal" min="0" data-m="sgTip" data-r="1" value="${tip||''}" placeholder="${S.djTipMin} minimum"></label>
+   <div class="small dim">You pay nothing now. You only owe the tip once the DJ confirms they played your song. Bigger bounties sit higher on the DJ's list.</div></div>`}
+  <button class="btn full" data-a="sendSong">${tip>0&&on&&!due?'Post '+usd(tip)+' bounty and send':'Send to the DJ · 100 points'}</button><div class="small dim">${tip>0&&on&&!due?'No points needed with a bounty.':'You have '+num(S.points)+' points.'} You get an alert when the DJ plays it.</div>`},
+profile(n){const p=PEOPLE[n];if(!p)return `<div class="row">${av(n,'lg')}<h1 style="font-size:21px">${esc(n)}</h1></div><div class="small dim">This guest has not set up a public profile yet.</div>`;
+  const posts=S.posts.filter(x=>x.who===n),at=VENUES.find(v=>v.friends.includes(n)),f=S.follow.includes(n);
+  return `<div class="row">${av(n,'lg')}<div class="col g6"><h1 style="font-size:21px">${esc(n)}</h1><div class="row wrap"><span class="tag gold">${p.tier} tier</span><span class="tag">${num(p.pts)} pts</span>${at?`<span class="tag ok">At ${at.name} now</span>`:''}</div></div></div>
+  <div>${esc(p.bio)}</div><div class="row"><button class="btn sm grow ${f?'ghost':''}" data-a="follow" data-v="${esc(n)}">${f?'In your circle':'Add to my circle'}</button>${at?`<button class="btn ghost sm grow" data-a="venue" data-v="${at.id}">Join them</button>`:''}</div>
+  <div class="card"><h2>Usual spots</h2><div class="row wrap">${p.spots.map(s=>`<button class="tag" data-a="venueByName" data-v="${s}">${s}</button>`).join('')}</div></div>
+  ${posts.length?`<h2>Recent posts</h2>${posts.map(x=>`<div class="card"><div class="small dim">at ${esc(x.at)} · ${x.t}</div>${esc(x.txt)}</div>`).join('')}`:''}`},
+account(){const u=S.user;return `<div class="row">${av(me(),'lg')}<div><h1 style="font-size:21px">${esc(me())}</h1><div class="small dim">Signed in with ${esc(u.via)}${u.contact?' · '+esc(u.contact):''}</div>${ageTag()}</div></div>
+  <h2>Dashboards</h2>${Object.keys(ROLE_L).map(r=>`<button class="card ${S.role===r?'vip':''}" data-a="role" data-v="${r}" style="padding:12px"><div class="row between"><b>${ROLE_L[r]}${r==='staff'?' · host, bartender, server':''}</b><span class="tag ${S.role===r?'gold':''}">${S.role===r?'Current':(r==='promoter'||r==='owner')&&(u.ver||{})[r]!=='ok'?'Needs verification':'Open'}</span></div></button>`).join('')}
+  <div class="note">In the live app each account only opens its own dashboard. Switching here is for trying the prototype.</div>
+  <div class="row"><button class="btn ghost sm grow" data-a="signOut">Sign out</button><button class="btn ghost sm grow" data-a="reset">Reset the demo</button></div>`},
+notifs(){return `<div class="row between"><h1 style="font-size:21px">Alerts</h1><button class="btn ghost sm" data-a="readAll">Mark all read</button></div>
+  ${S.notifs.map(n=>`<div class="card" style="${n.unread?'border-color:#ff2d7a88':''}"><div class="row between"><span class="tag">${NCATS[n.c]}</span><span class="small dim">${n.time}</span></div><b>${esc(n.t)}</b><div class="small dim">${esc(n.b)}</div></div>`).join('')}`},
+report(id){const e=E(id),c=calc(e),h=e.hours,mx=h?Math.max(...h):0;return `<div class="row between"><span class="eyebrow">Event report</span>${statusTag(e)}</div><h1 style="font-size:21px">${esc(e.name)}</h1><div class="small dim">${esc(e.when)} · ${V(e.venue).name} · promoter ${esc(e.promoter)}</div>
+  <div><div class="big">${usd(c.gross)}</div><div class="small dim">${e.status==='upcoming'?'Presales and deposits so far · '+e.rsvp+' RSVPs':e.heads+' guests · '+usd(c.gross/Math.max(1,e.heads))+' per head'}</div></div>
+  <div class="card">${Object.keys(CATS).map(k=>`<div class="hb"><span>${CATS[k]}</span><div class="meter"><i style="width:${c.gross?c.r[k]/c.gross*100:0}%"></i></div><b>${usd(c.r[k])}</b></div>`).join('')}</div>
+  ${h?`<div class="card"><h2>Sales by hour</h2><div class="bars">${h.map(x=>`<div style="height:${mx?x/mx*100:0}%">${x?`<b>${usd(Math.round(x*c.gross))}</b>`:''}</div>`).join('')}</div><div class="barlabels">${['10P','11P','12A','1A','2A','3A'].map(l=>`<span>${l}</span>`).join('')}</div></div>`:''}
+  <div class="card vip"><h2>Where the money goes</h2><div><div class="kv"><span>TNL platform fee (${S.split.fee}%)</span><b>${usd(c.fee)}</b></div><div class="kv"><span>Promoter share</span><b>${usd(c.promo)}</b></div><div class="kv"><span>Promoter costs</span><b>${usd(-c.pc)}</b></div><div class="kv"><span>Venue share</span><b>${usd(c.venue)}</b></div><div class="kv"><span>Venue costs</span><b>${usd(-c.vc)}</b></div><div class="kv"><span><b>Promoter takes home</b></span><b class="gold">${usd(c.promoNet)}</b></div><div class="kv"><span><b>Venue takes home</b></span><b class="gold">${usd(c.venueNet)}</b></div><div class="kv"><span>Sales tax held, not split</span><b>${usd(c.tax)}</b></div></div></div>
+  ${xferCard(e)}<button class="btn ghost full" data-a="copyReport" data-v="${id}">Copy report as text</button>`}
+};
+function bookQuote(e){const b=S.bk,door=b.qty*e.door,code=String(fv('promo','KDOT')).trim().toUpperCase(),cd=S.codes.find(c=>c.code===code),pct=cd?cd.pct:0,disc=door*pct/100,fee=S.member?0:2*b.qty,sub=door-disc+(b.table?100:0);return {door,code,pct,disc,fee,sub,total:sub+fee}}
+function open(fn,arg){sheetFn=fn;sheetArg={v:arg};drawSheet();$('sheet').classList.add('open');$('pane').scrollTop=0}
+function drawSheet(){if(!sheetFn)return;const y=$('pane').scrollTop;$('pane').innerHTML=`<button class="close" data-a="closeSheet" aria-label="Close">×</button>`+SH[sheetFn](sheetArg.v);$('pane').scrollTop=y}
+function closeSheet(){sheetFn=null;$('sheet').classList.remove('open')}
+function logIn(a){S.user=JSON.parse(JSON.stringify(a));S.user.ver=S.user.ver||{};S.role=a.role||'member';delete S.user.role;S.form.liC='';toast('Welcome back, '+S.user.name.split(' ')[0])}
+function startPay(p){p.method=methods()[0];S.pending=p;open('pay')}
+
+/* ---------- scanning ---------- */
+function handleCode(text,who){const m=/^TNL:([MOTVC]):(.+)$/.exec(String(text).trim());
+  if(who==='member'){if(m&&m[1]==='C'){const c=S.charges.find(x=>x.id===m[2]);if(c&&c.status==='open')return A.payCharge(c.id);return toast(c?'That tab is already paid':'That code is not an open bar tab')}return toast('That is not a bar payment code')}
+  const set=(ok,t,b)=>{S.lastScan={ok,t,b}};
+  if(!m)return set(0,'Code not recognized','This is not a Tucson Night Life code. Ask the guest to open their pass in the app.');
+  const id=m[2];
+  if(m[1]==='M'){S.scanMember=true;return set(1,me()+' · member 00417',`${tier()} tier. Their details are below.`)}
+  if(m[1]==='O'){const o=S.orders.find(x=>x.id===id);if(!o)return set(0,'Order not found','No paid order matches this code.');if(o.status!=='paid')return set(0,'Already picked up','Order '+o.id+' was handed over earlier. Do not serve it twice.');o.status='served';notify('deals','Order '+o.id+' picked up','Enjoy. Your points are already in your balance.');return set(1,'Paid · order '+o.id,o.lines.map(l=>l[0]).join(', ')+'. Hand it over.')}
+  if(m[1]==='T'){const t=S.tickets[+id];if(!t)return set(0,'Ticket not found','No ticket matches this code.');if(t.used)return set(0,'Ticket already used','This ticket was scanned in earlier tonight.');t.used=true;S.points+=50;S.life+=50;S.scans.unshift({what:'Door check-in',amt:0,pts:50});return set(1,'Paid · admit '+t.qty,E(t.ev).name+(t.table?' with a table':'')+'. Guest earned 50 points.')}
+  if(m[1]==='V'){const v=S.vouchers[+id];if(!v)return set(0,'Reward not found','No reward matches this code.');if(v.used)return set(0,'Reward already used','This reward was honored earlier.');v.used=true;return set(1,'Reward · '+v.name,'Honor it at '+v.where+'.')}
+  set(0,'Guest payment code','That code is for the guest to scan, not staff.')}
+function readImg(file,f){const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const scan=f.indexOf('scan')===0,mx=scan?1200:560,k=Math.min(1,mx/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.max(1,im.width*k|0);c.height=Math.max(1,im.height*k|0);
+   const x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);
+   if(scan){let r=null;try{r=jsQR(x.getImageData(0,0,c.width,c.height).data,c.width,c.height)}catch(e){}
+     if(r&&r.data)handleCode(r.data,f==='scan-member'?'member':'staff');else if(typeof jsQR==='undefined')toast('The scanner did not load. Check your connection and reopen the app');else toast('No code found. Fill the frame with the code and try again')}
+   else if(f==='doc'){S.form.vfDoc=1}else{const url=c.toDataURL('image/jpeg',.72);if(f==='ev')S.form.evImg=url;else if(f==='item')S.form.itImg=url;else{const it=S.menu.find(m=>m.id===f);if(it)it.img=url}}
+   render()};im.onerror=()=>toast('That file is not a photo');im.src=fr.result};fr.readAsDataURL(file)}
+
+/* ---------- actions ---------- */
+const A={
+noop(){},
+via(v){S.ob={step:2,via:v}},obBack(){S.ob.step=Math.max(0,S.ob.step-1)},toSignup(){S.ob={step:1,via:''}},
+login(){const c=String(fv('liC','')).trim().toLowerCase();if(!c)return toast('Type your email or mobile number');const a=S.accounts.find(x=>x.contact.toLowerCase()===c);if(!a)return toast('No account for that yet. Create one below');logIn(a)},
+loginGoogle(){const a=S.accounts.find(x=>x.via==='Google');if(a)return logIn(a);S.ob={step:2,via:'Google'};toast('No Google account here yet. Create one now')},
+obNext(){if(!String(fv('obName','')).trim())return toast('Add your name to continue');if(!String(fv('obC','')).trim())return toast(S.ob.via==='phone'?'Add your mobile number':'Add your email');const a=ageOf(String(fv('obDob','')));if(a==null||isNaN(a))return toast('Pick your date of birth on the calendar');if(a<18)return toast('You must be 18 or older to sign up');if(a>120)return toast('Check the year of your date of birth');S.ob.step=3},
+obRole(v){S.user={name:String(S.form.obName).trim(),via:S.ob.via,contact:String(S.form.obC).trim(),dob:String(S.form.obDob),ver:{promoter:'none',owner:'none'},app:{}};S.role=v;S.ob={step:0,via:''};$('main').scrollTop=0;toast('Welcome, '+S.user.name.split(' ')[0])},
+verifySubmit(r){const n=String(fv('vfName','')).trim();if(!n)return toast(r==='owner'?'Add your venue name':'Add your promoter name');S.user.ver=S.user.ver||{};S.user.app=S.user.app||{};S.user.app[r]={name:n,addr:String(fv('vfAddr','')).trim(),venue:String(fv('vfVenue','')).trim(),doc:!!S.form.vfDoc};S.user.ver[r]='pending';['vfName','vfAddr','vfVenue','vfDoc'].forEach(k=>S.form[k]='');$('main').scrollTop=0},
+verifyDemo(r){S.user.ver[r]='ok';toast('Verified. Your '+ROLE_L[r].toLowerCase()+' dashboard is open')},
+tblToggle(){S.tblOn=!S.tblOn},
+tblTake(id){const o=S.orders.find(x=>x.id===id);o.status='out';notify('deals','Your server has order '+o.id,'On the way to table '+o.table+'.')},
+tblDone(id){const o=S.orders.find(x=>x.id===id);o.status='served';notify('deals','Delivered to table '+o.table,'Order '+o.id+' is at your table. Enjoy.')},
+account(){open('account')},role(v){S.role=v;closeSheet();$('main').scrollTop=0},
+signOut(){S.user=null;S.ob={step:0,via:''};closeSheet()},
+tab(v){S.tab[S.role]=v;$('main').scrollTop=0},
+filter(v){S.filter=v},toggleMap(){S.mapOn=!S.mapOn},
+venue(v){open('venue',v)},venueByName(n){const v=VENUES.find(x=>x.name===n);if(v)open('venue',v.id)},
+event(v){S.bk={qty:2,table:false,splitTab:false};open('event',v)},ticket(v){open('ticket',+v)},voucher(v){open('voucher',+v)},report(v){open('report',v)},join(){open('join')},
+order(v){open('order',v)},charge(v){open('charge',v)},songSheet(){open('song')},
+profile(n){if(n===me()||n==='You'){if(S.role==='member'){S.tab.member='me';closeSheet()}else open('account');return}open('profile',n)},
+follow(n){S.follow=S.follow.includes(n)?S.follow.filter(x=>x!==n):S.follow.concat(n)},
+goBar(){S.tab.member='bar';closeSheet();$('main').scrollTop=0},
+openNotifs(){$('push').classList.remove('show');open('notifs')},closeSheet(){closeSheet()},
+readAll(){S.notifs.forEach(n=>n.unread=0)},
+fav(v){S.favs=S.favs.includes(v)?S.favs.filter(x=>x!==v):S.favs.concat(v)},
+checkin(v){if(S.checkins.includes(v))return;S.checkins.push(v);S.points+=50;S.life+=50;toast('Checked in at '+V(v).name+'. +50 points');if(S.share)notify('friends','Night shared','Your trusted contact can see you are at '+V(v).name+'.')},
+tipSet(v){S.form.sgTip=+v||''},
+sendSong(){const sg=String(fv('sgSong','')).trim(),note=String(fv('sgNote','')).trim(),tip=S.djTipsOn&&!myDue()?Math.max(0,parseFloat(S.form.sgTip)||0):0;if(!sg)return toast('Type the song and artist');
+  if(tip>0){if(tip<S.djTipMin)return toast('The smallest bounty is '+usd(S.djTipMin))}else{if(S.points<100)return toast(myDue()?'You need 100 points, or pay your last bounty first':'You need 100 points, or post a bounty instead');S.points-=100}
+  S.djq.unshift({id:S.seq++,song:sg,note,by:'You',st:'new',tip,tipSt:tip?'pledged':'none'});S.form.sgSong=S.form.sgNote=S.form.sgTip='';closeSheet();toast(tip?usd(tip)+' bounty posted. You pay only if it gets played':'Sent to the DJ booth')},
+payBounty(v){const r=S.djq.find(x=>x.id===+v);if(!r||ts(r)!=='due')return;startPay({kind:'tip',label:'Tip for '+(r.playedBy||'the DJ'),lines:[['Played: '+r.song,r.tip]],sub:0,tax:0,total:r.tip,sales:[],data:{id:r.id}})},
+djPlay(v){const r=S.djq.find(x=>x.id===+v),dj=S.role==='dj'?'DJ '+me():'The DJ';r.st='played';r.playedBy=dj;
+  if(r.by==='You'){if(r.tip){r.tipSt='due';notify('live',dj+' played your song','Pay your '+usd(r.tip)+' tip bounty under Order: '+r.song)}else notify('live',dj+' played your song',r.song+' at OVIA Lounge.')}
+  else{if(r.tip)r.tipSt='paid';toast(r.by+' was notified'+(r.tip?' and paid the '+usd(r.tip)+' bounty':''))}},
+djSkip(v){const r=S.djq.find(x=>x.id===+v);r.st='skip';if(r.tip)r.tipSt='void';if(r.by==='You')notify('live','The DJ passed on your request',(r.tip?'Your bounty is cancelled and you owe nothing: ':'Not played tonight: ')+r.song)},
+djClear(){S.djmsgs=[]},djTipsToggle(){S.djTipsOn=!S.djTipsOn},
+going(v){S.going=S.going.includes(v)?S.going.filter(x=>x!==v):S.going.concat(v)},
+qty(v){S.bk.qty=Math.max(1,Math.min(10,S.bk.qty+ +v))},bopt(v){S.bk[v]=!S.bk[v]},
+book(id){const e=E(id),b=S.bk,q=bookQuote(e),lines=[['Door × '+b.qty,q.door]];if(q.disc)lines.push(['Code '+q.code,-q.disc]);if(b.table)lines.push(['Table deposit',100]);if(q.fee)lines.push(['Service fee',q.fee]);
+  const sales=[{cat:'door',amt:q.door-q.disc}];if(b.table)sales.push({cat:'tables',amt:100});
+  startPay({kind:'ticket',label:e.name,lines,sub:q.sub,tax:0,total:q.total,ev:id,sales,data:{qty:b.qty,table:b.table,code:q.code}})},
+payMember(){startPay({kind:'member',label:'OVIA Lounge membership',lines:[['Monthly membership',+S.memberPrice]],sub:0,tax:0,total:+S.memberPrice,sales:[]})},
+add(v){S.cart[v]=(S.cart[v]||0)+1},clearCart(){S.cart={}},
+checkout(){const c=cartOf(S.cart,0);if(!c.sub)return;const tb=S.member&&S.tblOn?String(fv('tblNo','')).trim():'';if(S.member&&S.tblOn&&!tb)return toast('Type your table number first');startPay({kind:'order',label:'OVIA Lounge bar order',lines:c.lines.concat([[taxLbl(),c.tax]]),sub:c.sub,tax:c.tax,total:c.total,ev:'ind',sales:c.sales,data:{lines:c.lines,table:tb}})},
+sadd(v){S.scart[v]=(S.scart[v]||0)+1},clearS(){S.scart={};S.custom=0},
+addCustom(){const a=parseFloat(fv('custAmt',''))||0;if(a<=0)return toast('Type an amount first');S.custom=(+S.custom||0)+a;S.form.custAmt=''},
+mkCharge(){const c=cartOf(S.scart,+S.custom||0);if(!c.sub)return;const ch={id:'C'+(S.seq++),lines:c.lines,sub:c.sub,tax:c.tax,total:c.total,sales:c.sales,status:'open'};S.charges.unshift(ch);S.scart={};S.custom=0;open('charge',ch.id)},
+cashSale(){const c=cartOf(S.scart,+S.custom||0);if(!c.sub)return;recordSales('ind',c.sales,c.tax);let msg=usd(c.total)+' cash sale recorded';if(S.scanMember){const p=earn(c.sub);S.scans.unshift({what:'Bar · cash',amt:c.sub,pts:p});msg+='. Member earned '+num(p)+' points'}S.scart={};S.custom=0;toast(msg)},
+payCharge(id){const c=S.charges.find(x=>x.id===id);if(!c||c.status!=='open')return;startPay({kind:'charge',label:'OVIA Lounge bar tab',lines:c.lines.concat([[taxLbl(),c.tax]]),sub:c.sub,tax:c.tax,total:c.total,ev:'ind',sales:c.sales,data:{id}})},
+method(v){S.pending.method=v},
+payNow(){const p=S.pending,ms=methods(),m=ms.includes(p.method)?p.method:ms[0];if(!m)return;const pts=p.sub?earn(p.sub):0;
+  S.pays.unshift({what:p.label,total:p.total,method:m,pts});if(p.sales.length)recordSales(p.ev,p.sales,p.tax);S.pending=null;
+  if(p.kind==='order'){const o={id:'A'+(100+S.seq++),lines:p.data.lines,total:p.total,status:'paid',table:p.data.table||''};S.orders.unshift(o);S.cart={};S.scans.unshift({what:(o.table?'Table order ':'Bar order ')+o.id,amt:p.sub,pts});notify('deals','Paid · order '+o.id,'+'+num(pts)+' points. '+(o.table?'Your server has it for table '+o.table+'.':'Show the bartender your code.'));open('order',o.id)}
+  else if(p.kind==='charge'){const c=S.charges.find(x=>x.id===p.data.id);c.status='paid';S.scans.unshift({what:'Bar tab',amt:p.sub,pts});if(S.role==='member'){notify('deals','Paid · '+usd(p.total)+' at OVIA Lounge','+'+num(pts)+' points. The bartender can see it is paid.');closeSheet()}else open('charge',c.id)}
+  else if(p.kind==='tip'){const r=S.djq.find(x=>x.id===p.data.id);r.tipSt='paid';closeSheet();toast('Tip paid to '+(r.playedBy||'the DJ')+'. You can post a new bounty')}
+  else if(p.kind==='ticket'){S.tickets.push({ev:p.ev,qty:p.data.qty,table:p.data.table,total:p.total,code:p.data.code});if(!S.going.includes(p.ev))S.going.push(p.ev);notify('events','You are confirmed for '+E(p.ev).name,'+'+num(pts)+' points. Your QR ticket is under Me.');open('ticket',S.tickets.length-1)}
+  else{S.member=true;closeSheet();if(S.role==='member')S.tab.member='social';notify('deals','Welcome to the circle','Double points are on. The members feed is unlocked.')}},
+demoScan(v){handleCode(v,'staff');$('main').scrollTop=0},
+sale(){const amt=Math.max(0,parseFloat(fv('saleAmt','28'))||0),cat=fv('saleCat','bar');if(!amt)return toast('Enter an amount first');
+  recordSales('ind',[{cat,amt}],0);const p=earn(amt);S.scans.unshift({what:CATS[cat]+' · OVIA Lounge',amt,pts:p});S.lastScan={ok:1,t:usd(amt)+' recorded',b:me()+' earned '+num(p)+' points. The sale is on tonight\'s report and split.'};notify('deals','+'+num(p)+' points at OVIA Lounge',usd(amt)+' at the '+CATS[cat].toLowerCase()+'. Balance: '+num(S.points)+' points.')},
+doorIn(){S.points+=50;S.life+=50;S.scans.unshift({what:'Door check-in',amt:0,pts:50});S.lastScan={ok:1,t:'Checked in',b:me()+' is in. 50 points added.'}},
+scanDone(){S.scanMember=false;S.lastScan=null},
+redeem(id){const r=REWARDS.find(x=>x.id===id);if(S.points<r.cost)return;S.points-=r.cost;S.vouchers.unshift({id:r.id,name:r.name,where:r.where});open('voucher',0)},
+like(v){v=+v;S.liked=S.liked.includes(v)?S.liked.filter(x=>x!==v):S.liked.concat(v)},
+post(){const t=String(fv('postTxt','')).trim();if(!t)return toast('Write something first');S.posts.unshift({who:me(),at:fv('postAt',VENUES[0].name),txt:t,likes:0,t:'Now'});S.liked=S.liked.map(x=>x+1);S.form.postTxt=''},
+mute(v){S.mute[v]=!S.mute[v]},share(){S.share=!S.share},
+testPush(){const c=Object.keys(NCATS).find(c=>!S.mute[c]);if(!c)return toast('All alerts are switched off');notify(c,'Main Gate Tap just hit 88% full','25 minute line. Monsoon Rooftop has no wait right now.')},
+reset(){try{localStorage.removeItem('tnl-v4')}catch(e){}const u=S.user,r=S.role;S=JSON.parse(JSON.stringify(DEF));S.user=u;S.role=r;closeSheet();toast('Demo reset')},
+checkGuest(v){v=+v;S.inGuests=S.inGuests.includes(v)?S.inGuests.filter(x=>x!==v):S.inGuests.concat(v)},
+editMenu(){S.editMenu=!S.editMenu},delItem(v){S.menu=S.menu.filter(m=>m.id!==v);delete S.cart[v];delete S.scart[v]},
+addItem(){const n=String(fv('niName','')).trim(),p=parseFloat(fv('niPrice',''));if(!n||!(p>=0))return toast('Add a name and a price');const cat=fv('niCat','bar');S.menu.push({id:'x'+(S.seq++),name:n,price:p,cat,g:cat==='hookah'?'hookah':cat==='tables'?'bottle':'glass',img:S.form.itImg||''});S.form.niName=S.form.niPrice='';S.form.itImg='';toast(n+' is on the menu')},
+payToggle(k){S.payc[k].on=!S.payc[k].on;if(S.payc[k].on&&!S.payc[k].id&&k!=='stripe')toast('Add your '+PAYN[k]+' handle so guests know who they are paying')},
+postEvent(by){const n=String(fv('evName','')).trim(),d=String(fv('evDate','')),t1=String(fv('evStart','22:00')),t2=String(fv('evEnd','02:00'));if(!n)return toast('Add the event name');if(!d)return toast('Pick the date on the calendar');if(d<iso(new Date()))return toast('That date has already passed');if(!t1||!t2)return toast('Set the start and end time');const w=fmtD(d)+' · '+fmtT(t1)+' to '+fmtT(t2);
+  S.events.unshift({id:'c'+(S.seq++),name:n,venue:'ovia',when:w,status:'upcoming',age:fv('evAge','21+'),door:Math.max(0,parseFloat(fv('evDoor','10'))||0),promoter:by==='owner'?'OVIA Lounge':'K. Dot',img:S.form.evImg||'',heads:0,rsvp:0,capE:Math.max(1,parseInt(fv('evCap','120'))||120),base:{door:0,bar:0,tables:0,hookah:0},note:String(fv('evNote','')).trim()});
+  ['evName','evDate','evNote','evImg'].forEach(k=>S.form[k]='');notify('events','New event: '+n,w+' at OVIA Lounge. Tap Tonight to get on the list.')},
+delEvent(v){S.events=S.events.filter(e=>e.id!==v)},
+addCode(){const c=String(fv('cdCode','')).trim().toUpperCase().replace(/[^A-Z0-9]/g,''),p=Math.max(0,Math.min(100,parseFloat(fv('cdPct','10'))||0));if(!c)return toast('Type a code');if(S.codes.some(x=>x.code===c))return toast('That code already exists');S.codes.push({code:c,pct:p,by:'K. Dot'});S.form.cdCode='';toast('Code '+c+' created')},
+sendCode(c){const cd=S.codes.find(x=>x.code===c);notify('blasts','K. Dot sent you a code',cd.pct?`Use ${c} for ${cd.pct}% off the door at checkout.`:`Use ${c} when you book so K. Dot gets credit.`);toast('Sent to 1,284 followers')},
+copyReport(id){const e=E(id),c=calc(e);copyText(`${e.name} (${e.when})\nGross ${usd(c.gross)} | Door ${usd(c.r.door)} | Bar ${usd(c.r.bar)} | Tables ${usd(c.r.tables)} | Hookah ${usd(c.r.hookah)}\nTNL fee ${usd(c.fee)} | Promoter takes home ${usd(c.promoNet)} | Venue takes home ${usd(c.venueNet)} | Tax held ${usd(c.tax)}`,'Report copied')},
+blast(){const t=String(fv('blastT','Doors are open at OVIA')).trim(),b=String(fv('blastB','Free entry on the list until 11.')).trim(),a=$('blastA').value;if(!t)return toast('Add a headline');
+  if(a==='DJ booth'){S.djmsgs.unshift({t,b,from:S.role==='owner'?'the owner':'K. Dot'});return toast('Sent to the DJ booth screen')}
+  notify('blasts',t,b);toast('Push sent to '+a)},
+liveUpdate(){S.liveMsg=String(fv('liveT',S.liveMsg)).trim()||S.liveMsg;notify('live','OVIA Lounge: live update',S.liveMsg)},
+offerSend(){Object.assign(S.split,{by:'owner',sent:true,agreed:false});toast('Offer sent to K. Dot')},
+agree(){S.split.agreed=true;S.split.sent=true;S.counter=null;notify('blasts','Split agreed and locked','OVIA and K. Dot both agreed. Payouts transfer on these terms after each event.')},
+decline(){const sp=S.split;S.counter={door:sp.door,bar:sp.bar,tables:sp.tables,hookah:sp.hookah,dj:sp.dj,sec:sp.sec,host:sp.host}},
+dropCounter(){S.counter=null},
+sendCounter(){Object.assign(S.split,S.counter,{by:'promoter',sent:true,agreed:false});S.counter=null;toast('Counter-offer sent to the owner')},
+poutToggle(k){S.pout[k].on=!S.pout[k].on;if(S.pout[k].on)toast(Object.keys(S.xfer).length?'Stripe connected. Held payouts are on their way':'Stripe connected')},
+transfer(id){if(!S.split.agreed)return toast('Owner and promoter must both agree to the split first');S.xfer[id]=1;const held=xferRows(E(id)).filter(r=>r[2][0]==='warn').length;notify('blasts','Payouts sent for '+E(id).name,held?held+' held until those people connect Stripe.':'Everyone has been paid through Stripe.')}
+};
+function copyText(t,msg){try{navigator.clipboard.writeText(t).then(()=>toast(msg),()=>toast(t))}catch(e){toast(t)}}
+function setPath(path,val){const k=path.split('.');if(k[0]==='menu'){const it=S.menu.find(m=>m.id===k[1]);if(it)it[k[2]]=val;return}let o=S;for(let i=0;i<k.length-1;i++)o=o[k[i]];o[k[k.length-1]]=val;if(k[0]==='split')Object.assign(S.split,{by:'owner',sent:false,agreed:false})}
+
+/* ---------- render ---------- */
+const NAV={member:[['tonight','Tonight','moon'],['social','Social','users'],['scan','Scan','qr',1],['bar','Order','glass'],['me','Me','user']],
+ promoter:[['studio','Home','chart'],['events','Events','cal'],['scan','Scan','qr',1],['sell','Sell','bag'],['payouts','Payouts','cash']],
+ owner:[['live','Live','pulse'],['events','Events','cal'],['scan','Scan','qr',1],['sell','Sell','bag'],['money','Money','cash']],
+ staff:[['scan','Scan','qr'],['sell','Sell','bag'],['orders','Orders','list'],['pay','My pay','cash']],
+ dj:[['booth','Requests','music'],['tips','Tips','cash']],
+ sec:[['door','Door check','qr'],['pay','My pay','cash']]};
+const SC={member:M,promoter:PR,owner:OW,staff:ST,dj:DJ,sec:SEC};
+function render(){const m=$('main'),y=m.scrollTop,inn=!!S.user;
+  ['pts','bell','acct'].forEach(i=>$(i).style.display=inn?'':'none');
+  if(!inn){m.innerHTML=onboard();$('nav').innerHTML='';closeSheet();save();return}
+  const tab=S.tab[S.role],gate=(S.role==='promoter'||S.role==='owner')&&(S.user.ver||{})[S.role]!=='ok';
+  $('pts').textContent=num(S.points)+' pts';$('pts').style.display=S.role==='member'?'':'none';
+  $('acct').textContent=ROLE_L[S.role];
+  const u=S.notifs.filter(n=>n.unread).length;$('bell').innerHTML=ic('bell')+(u?`<i>${u}</i>`:'');$('bell').style.display=S.role==='member'?'':'none';
+  m.innerHTML=gate?verifyScreen(S.role):(SC[S.role][tab]||SC[S.role][NAV[S.role][0][0]])();m.scrollTop=y;
+  const tq=S.orders.filter(o=>o.table&&o.status!=='served').length;
+  $('nav').innerHTML=gate?'':NAV[S.role].map(n=>`<button class="${tab===n[0]?'on':''} ${n[3]?'ctr':''}" data-a="tab" data-v="${n[0]}">${n[3]?`<span class="orb">${ic(n[2])}</span>`:ic(n[2])}<span>${n[1]}${n[0]==='orders'&&tq?' ('+tq+')':''}</span></button>`).join('');
+  drawSheet();save()}
+document.addEventListener('click',e=>{if(e.target.closest('input,select,textarea,label.btn,a'))return;const el=e.target.closest('[data-a]');if(!el){if(e.target.id==='sheet')closeSheet();return}
+  if(el.disabled)return;A[el.dataset.a](el.dataset.v,el);render()});
+document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('span[data-a],div[data-a]')){e.preventDefault();e.target.click()}});
+document.addEventListener('input',e=>{const el=e.target;if(el.dataset.m)S.form[el.dataset.m]=el.value;
+  if(el.dataset.i==='cap'){S.crowd.ovia=+el.value;$('capLbl').textContent=el.value+'% · '+Math.round(el.value*3)+' of 300'}
+  if(el.dataset.i==='split'){S.split[el.dataset.k]=+el.value;Object.assign(S.split,{by:'owner',sent:false,agreed:false});$('lb-'+el.dataset.k).textContent=el.value+'%';$('splitPrev').innerHTML=splitPrev()}
+  if(el.dataset.i==='counter'){S.counter[el.dataset.k]=+el.value;$('cb-'+el.dataset.k).textContent=el.value+'%';$('counterPrev').innerHTML=counterPrev()}});
+document.addEventListener('change',e=>{const el=e.target;
+  if(el.type==='file'){if(el.files&&el.files[0])readImg(el.files[0],el.dataset.f);el.value='';return}
+  if(el.dataset.s){setPath(el.dataset.s,el.type==='number'||/^(wait)/.test(el.dataset.s)?Math.max(0,parseFloat(el.value)||0):el.value);render();return}
+  if(el.dataset.i||el.dataset.m==='promo'||el.dataset.r){render();return}
+  if(el.dataset.m)save()});
+render();
+</script>
+</body>
+</html>
