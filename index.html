@@ -154,6 +154,41 @@ input[type=range]{width:100%;accent-color:#ff2d7a}
 .note{font-size:11.5px;color:var(--dim);border-left:2px solid var(--line);padding-left:10px}
 .thumb{width:100%;max-height:200px;object-fit:cover;border-radius:12px;border:1px solid var(--line)}
 a{color:var(--gold)}
+.av{overflow:hidden}.av img{width:100%;height:100%;object-fit:cover;display:block}
+.tcard{position:relative;aspect-ratio:4/5;border-radius:22px;overflow:hidden;background:#000;box-shadow:0 18px 40px #0009;user-select:none;-webkit-user-select:none}
+.tcard>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.segs{position:absolute;top:10px;left:12px;right:12px;display:flex;gap:4px;z-index:2}.segs i{flex:1;height:3px;border-radius:2px;background:#ffffff55}.segs i.on{background:#fff}
+.tnav{position:absolute;top:0;bottom:40%;width:50%;z-index:2}.tnav.l{left:0}.tnav.r{right:0}
+.tinfo{position:absolute;left:0;right:0;bottom:0;padding:80px 16px 16px;background:linear-gradient(transparent,#000000eb 45%);display:flex;flex-direction:column;gap:7px;z-index:1}
+.tname{font:800 26px/1.05 var(--display);letter-spacing:-.02em}.tname span{font:500 22px var(--body);margin-left:8px}
+.deck{position:relative}.deck .tcard.next{position:absolute;inset:0;transform:scale(.94) translateY(14px);opacity:.5}
+.deck #swipeCard{position:relative;z-index:1;touch-action:pan-y;cursor:grab}
+.stamp2{position:absolute;top:34px;z-index:3;padding:4px 12px;border:4px solid;border-radius:10px;font:800 24px var(--display);opacity:0;pointer-events:none}
+.st-like{left:18px;color:#3ddc97;transform:rotate(-14deg)}.st-nope{right:18px;color:#ff5c7a;transform:rotate(14deg)}
+.rbs{display:flex;justify-content:center;align-items:center;gap:16px}
+.rb{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;background:var(--panel);border:1px solid var(--line);box-shadow:0 8px 22px #0008}
+.rb svg.ic{width:28px;height:28px;stroke-width:2.4}.rb.sm{width:46px;height:46px}.rb.sm svg.ic{width:21px;height:21px}
+.rb.pass{color:#ff5c7a}.rb.like{color:#3ddc97}.rb.drink{color:var(--gold)}.rb.info{color:#7cc4ff}.rb[disabled]{opacity:.4}
+.badges{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 8px}
+.badge{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;font:600 10.5px/1.2 var(--body)}
+.medal{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;color:#fff;background:var(--raise);box-shadow:inset 0 0 0 2px #ffffff40,0 6px 16px #0007}
+.medal svg.ic{width:22px;height:22px;stroke-width:2}
+.badge.locked{color:var(--dim)}.badge.locked .medal{color:#6c5a7c;box-shadow:inset 0 0 0 1px var(--line)}
+.mini-b{display:flex;gap:5px;flex-wrap:wrap}.mini-b .medal{width:26px;height:26px;box-shadow:inset 0 0 0 1px #ffffff50}.mini-b .medal svg.ic{width:14px;height:14px}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.slot{position:relative;aspect-ratio:4/5;border-radius:14px;border:1.5px dashed var(--line);background:var(--raise);display:grid;place-items:center;overflow:hidden;color:var(--dim);font:600 12px var(--body);text-align:center;cursor:pointer}
+.slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.slot .x{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;background:#000b;color:#fff;font-size:16px;line-height:28px;z-index:1}
+.slot input{position:absolute;width:1px;height:1px;opacity:0}.slot:focus-within{outline:2px solid var(--gold)}
+.here{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 8px}
+.here .hp{display:flex;flex-direction:column;align-items:center;gap:4px;font:600 11px var(--body);text-align:center}
+.here .av{width:60px;height:60px}
+.bubs{display:flex;flex-direction:column;gap:8px}
+.bub{max-width:80%;padding:9px 12px;border-radius:18px;font-size:14px;line-height:1.35}
+.bub.me{align-self:flex-end;background:var(--neon);border-bottom-right-radius:5px}
+.bub.them{align-self:flex-start;background:var(--raise);border-bottom-left-radius:5px}
+.bub.gift{align-self:flex-end;background:linear-gradient(100deg,#ffd778,#e9a020);color:#1a1204;border-bottom-right-radius:5px}
+.match{display:flex;justify-content:center;margin:8px 0}.match .av{width:110px;height:110px;border:4px solid var(--ink)}.match .av+.av{margin-left:-20px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -200,12 +235,104 @@ const REWARDS=[
  {id:'table',name:'VIP table upgrade',cost:4000,where:'OVIA Lounge'}
 ];
 const PEOPLE={
- 'Maya R.':{h:330,tier:'Gold',pts:6420,spots:['OVIA Lounge','Monsoon Rooftop'],bio:'Booth 4 regular. Hip-hop and hookah.'},
- 'Dre T.':{h:210,tier:'Silver',pts:1310,spots:['Main Gate Tap','OVIA Lounge'],bio:'Game days, then wherever the line is short.'},
- 'Lexi P.':{h:40,tier:'Silver',pts:1510,spots:['Monsoon Rooftop','Barrio Social'],bio:'Bachata first, questions later.'},
- 'Tino G.':{h:120,tier:'Silver',pts:980,spots:['The Saguaro Room'],bio:'House music on 4th Ave.'},
- 'Jas W.':{h:265,tier:'Gold',pts:3120,spots:['Monsoon Rooftop'],bio:'Rooftop sunsets and cocktails.'},
- 'Kayla M.':{h:15,tier:'Silver',pts:760,spots:['Monsoon Rooftop','Copper Still'],bio:'Cocktail bars over clubs.'}};
+ 'Maya R.':{h:330,age:27,at:'ovia',likesYou:1,tier:'Gold',pts:6420,spots:['OVIA Lounge','Monsoon Rooftop'],bio:'Booth 4 regular. Hip-hop and hookah.',b:['vip','streak','round','match','first','social'],look:{s:5,hs:'long',hc:'#1a0f0a',sh:'#7b2cbf',ear:1}},
+ 'Dre T.':{h:210,age:29,at:'ovia',tier:'Silver',pts:1310,spots:['Main Gate Tap','OVIA Lounge'],bio:'Game days, then wherever the line is short.',b:['first','streak'],look:{s:6,hs:'fade',hc:'#120c08',sh:'#1d3557',beard:1}},
+ 'Lexi P.':{h:40,age:24,at:'ovia',likesYou:1,tier:'Silver',pts:1510,spots:['Monsoon Rooftop','Barrio Social'],bio:'Bachata first, questions later.',b:['vip','first','dj'],look:{s:1,hs:'bun',hc:'#6b3e1f',sh:'#e63946',ear:1}},
+ 'Nia B.':{h:45,age:23,at:'ovia',likesYou:1,tier:'Gold',pts:2890,spots:['OVIA Lounge'],bio:'Here for the music, staying for the people.',b:['vip','dj','first','social'],look:{s:7,hs:'afro',hc:'#0f0a08',sh:'#ffbe0b',ear:1}},
+ 'Tino G.':{h:120,age:26,at:'saguaro',tier:'Silver',pts:980,spots:['The Saguaro Room'],bio:'House music on 4th Ave.',b:['first'],look:{s:3,hs:'waves',hc:'#1b120c',sh:'#2a9d8f',beard:1}},
+ 'Bianca F.':{h:300,age:26,at:'saguaro',likesYou:1,tier:'Silver',pts:1720,spots:['The Saguaro Room','Copper Still'],bio:'Dance floor until they turn the lights on.',b:['vip','first','match'],look:{s:3,hs:'curly',hc:'#4a2a17',sh:'#ff006e',ear:1}},
+ 'Jas W.':{h:265,age:25,at:'monsoon',likesYou:1,tier:'Gold',pts:3120,spots:['Monsoon Rooftop'],bio:'Rooftop sunsets and cocktails.',b:['vip','round','social','first'],look:{s:5,hs:'braids',hc:'#140d0a',sh:'#f4a261',ear:1}},
+ 'Kayla M.':{h:15,age:20,at:'monsoon',tier:'Silver',pts:760,spots:['Monsoon Rooftop','Copper Still'],bio:'Rooftops and good playlists.',b:['first'],look:{s:0,hs:'long',hc:'#c9a26b',sh:'#ff8fab',ear:1}},
+ 'Marco V.':{h:190,age:31,at:'barrio',likesYou:1,tier:'Silver',pts:1980,spots:['Barrio Social'],bio:'Banda nights and late tacos after.',b:['round','first','streak'],look:{s:2,hs:'short',hc:'#2b1b12',sh:'#264653',beard:1}},
+ 'Sasha K.':{h:220,age:28,at:'copper',tier:'Gold',pts:2650,spots:['Copper Still'],bio:'Cocktail bars over clubs.',b:['first','roller'],look:{s:1,hs:'long',hc:'#3a2416',sh:'#3a86ff'}},
+ 'Andre L.':{h:280,age:30,at:'maingate',tier:'Silver',pts:1420,spots:['Main Gate Tap'],bio:'Wildcats fan. Pitchers after every home game.',b:['first','streak'],look:{s:6,hs:'curly',hc:'#140d09',sh:'#8338ec'}},
+ 'Jordan C.':{h:160,age:22,at:'maingate',tier:'Silver',pts:640,spots:['Main Gate Tap','The Saguaro Room'],bio:'Always down for karaoke.',b:['first'],look:{s:2,hs:'fade',hc:'#3b2a1d',sh:'#06d6a0'}}};
+const SKIN=['#f6d3b8','#eebd96','#d9a179','#c68a5e','#a86b45','#8d5434','#6b3d24','#4f2c1a'],FACE={},PH={};
+function shade(hex,k){const n=parseInt(hex.slice(1),16),f=x=>Math.max(0,Math.min(255,Math.round(x*k)));return '#'+((1<<24)+(f(n>>16)<<16)+(f(n>>8&255)<<8)+f(n&255)).toString(16).slice(1)}
+function hsh(t){let h=7;for(const c of String(t))h=(h*31+c.charCodeAt(0))>>>0;return h}
+function face(n,v){v=v||0;const key=n+'|'+v;if(FACE[key])return FACE[key];
+ const h=hsh(n),p=PEOPLE[n],L=(p&&p.look)||{s:h%8,hs:['short','long','curly','fade','bun','waves'][h%6],hc:['#1a120c','#3a2416','#6b3e1f','#c9a26b'][h>>3&3],sh:'#'+((h>>5)&0xffffff|0x404040).toString(16).padStart(6,'0').slice(-6)};
+ const sk=SKIN[L.s],sd=shade(sk,.84),dk=shade(sk,.62),hc=L.hc,hl=shade(hc,1.9),base=[300,205,25][v]+(h%40),tilt=[0,-5,5][v],sc=[1,1.16,1.04][v],shades=v===2&&h%2===0,open=v===1;
+ const hair={short:'M29 52C27 26 73 26 71 52C69 40 62 34 50 34C38 34 31 40 29 52Z',fade:'M30 47C30 28 70 28 70 47C66 38 58 35 50 35C42 35 34 38 30 47Z',waves:'M29 51C27 27 73 27 71 51C69 40 62 34 50 34C38 34 31 40 29 51Z',
+  long:'M29 57C26 26 74 26 71 57C70 42 62 33 52 33C46 41 36 45 29 57Z',bun:'M30 48C30 27 70 27 70 48C64 37 36 37 30 48Z',braids:'M30 48C30 27 70 27 70 48C64 37 36 37 30 48Z',afro:'M30 50C30 31 70 31 70 50C64 41 36 41 30 50Z',curly:'M30 50C30 30 70 30 70 50C64 40 36 40 30 50Z'}[L.hs]||'';
+ let back='';
+ if(L.hs==='long'||L.hs==='braids')back=`<path d="M27 52C25 21 75 21 73 52L79 106C62 114 38 114 21 106Z" fill="${hc}"/>`+(L.hs==='braids'?[30,36,42,58,64,70].map(x=>`<path d="M${x} 60L${x+(x<50?-4:4)} 108" stroke="${hl}" stroke-width=".7" opacity=".6"/>`).join(''):'');
+ if(L.hs==='afro')back=`<circle cx="50" cy="44" r="31" fill="${hc}"/><circle cx="50" cy="44" r="31" fill="none" stroke="${hl}" stroke-width=".6" stroke-dasharray="1 3" opacity=".5"/>`;
+ if(L.hs==='curly')back=[[28,42],[33,30],[43,23],[57,23],[67,30],[72,42],[26,56],[74,56]].map(c=>`<circle cx="${c[0]}" cy="${c[1]}" r="9" fill="${hc}"/>`).join('');
+ if(L.hs==='bun')back=`<circle cx="50" cy="20" r="10" fill="${hc}"/>`;
+ const bok=[0,1,2,3,4].map(i=>{const r=hsh(n+v+i);return `<circle cx="${r%100}" cy="${(r>>7)%70}" r="${4+(r>>3)%9}" fill="hsl(${(base+i*40)%360} 95% 65%)" opacity="${.18+((r>>4)%20)/100}"/>`}).join('');
+ const front=(L.hs==='curly'?[[38,32],[50,29],[62,32]].map(c=>`<circle cx="${c[0]}" cy="${c[1]}" r="7" fill="${hc}"/>`).join(''):'')+`<path d="${hair}" fill="${hc}"/>`+(L.hs==='waves'?`<path d="M37 33q3.3-2.5 6.6 0t6.6 0 6.6 0" stroke="${hl}" stroke-width=".8" fill="none"/>`:'');
+ const eyes=shades?`<path d="M35 50h12v4q0 4.5-6 4.5t-6-4.5zM53 50h12v4q0 4.5-6 4.5t-6-4.5z" fill="#111"/><path d="M47 51h6" stroke="#111" stroke-width="1.4"/><path d="M37 51.5l3 0M55 51.5l3 0" stroke="#fff" stroke-width=".8" opacity=".6"/>`
+  :`<ellipse cx="42" cy="53" rx="2.3" ry="2.7" fill="#1b1210"/><ellipse cx="58" cy="53" rx="2.3" ry="2.7" fill="#1b1210"/><circle cx="42.8" cy="52.1" r=".75" fill="#fff"/><circle cx="58.8" cy="52.1" r=".75" fill="#fff"/>`+(L.ear?`<path d="M39 50.6l-1.4-1M61 50.6l1.4-1" stroke="#1b1210" stroke-width=".8"/>`:'');
+ const lip=L.ear?'#a8445a':dk,mouth=open?`<path d="M43 64.5q7 8 14 0z" fill="#fff" stroke="${lip}" stroke-width="1.1" stroke-linejoin="round"/>`:`<path d="M43.5 65q6.5 4.6 13 0" stroke="${lip}" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
+ const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 125"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(${base%360} 75% 32%)"/><stop offset="1" stop-color="hsl(${(base+50)%360} 80% 10%)"/></linearGradient><radialGradient id="vg" cx=".5" cy=".42" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".55"/></radialGradient></defs>
+ <rect width="100" height="125" fill="url(#g)"/>${bok}<g transform="translate(50 62) rotate(${tilt}) scale(${sc}) translate(-50 -62)">${back}
+ <path d="M8 127C10 99 30 91 50 91C70 91 90 99 92 127Z" fill="${L.sh}"/><path d="M41 91L50 102L59 91" fill="${sd}"/><path d="M42 69h16v21q-8 6-16 0z" fill="${sd}"/>
+ <ellipse cx="30.5" cy="55" rx="4" ry="6" fill="${sd}"/><ellipse cx="69.5" cy="55" rx="4" ry="6" fill="${sd}"/>${L.ear?'<circle cx="30.5" cy="62.5" r="1.9" fill="#ffd166"/><circle cx="69.5" cy="62.5" r="1.9" fill="#ffd166"/>':''}
+ <ellipse cx="50" cy="53" rx="20" ry="24" fill="${sk}"/>${front}
+ <path d="M37.5 47q4.5-2.6 9 0M53.5 47q4.5-2.6 9 0" stroke="${shade(hc,.9)}" stroke-width="1.7" fill="none" stroke-linecap="round"/>${eyes}
+ <path d="M50 55q-2.6 6 .6 7.2" stroke="${dk}" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+ <circle cx="37" cy="60" r="3.6" fill="#ff6b81" opacity=".16"/><circle cx="63" cy="60" r="3.6" fill="#ff6b81" opacity=".16"/>
+ ${L.beard?`<path d="M30.5 56C31.5 74 42 79.5 50 79.5S68.5 74 69.5 56C66 66.5 60 70.5 50 70.5S34 66.5 30.5 56Z" fill="${hc}" opacity=".92"/><path d="M42.5 62.8q7.5-3.4 15 0q-7.5 2.4-15 0z" fill="${hc}"/>`:''}${mouth}</g>
+ <rect width="100" height="125" fill="url(#vg)"/></svg>`;
+ return FACE[key]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)}
+const BLANK='data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 125"><rect width="100" height="125" fill="#241a2e"/><circle cx="50" cy="50" r="19" fill="#4a3a5c"/><path d="M14 125C16 96 32 84 50 84S84 96 86 125Z" fill="#4a3a5c"/></svg>');
+function photos(n){if(n===me()||n==='You'){const ph=S.photos.filter(Boolean);return ph.length?ph:[BLANK]}return PEOPLE[n]?[0,1,2].map(v=>face(n,v)):[face(n,0)]}
+const pic=(n,v)=>`<img src="${photos(n)[v||0]}" alt="">`;
+const here=id=>Object.keys(PEOPLE).filter(n=>PEOPLE[n].at===id&&!S.blocked.includes(n)).concat(S.user&&S.checkins.includes(id)?[me()]:[]);
+const canMsg=n=>S.matches.includes(n)||S.friends.includes(n);
+const deck=()=>Object.keys(PEOPLE).filter(n=>!S.likes.includes(n)&&!S.passes.includes(n)&&!S.blocked.includes(n));
+const BADGES=[
+ {id:'first',n:'First Night',d:'Check in or get scanned once',g:'star',c:['#ff8a3d','#ff2d7a']},
+ {id:'owl',n:'Night Owl',d:'Reach 1,000 lifetime points',g:'moon',c:['#7b6cff','#2b1a6b']},
+ {id:'gold',n:'Gold Status',d:'Reach 2,500 lifetime points',g:'crown',c:['#ffd778','#c98a10']},
+ {id:'black',n:'Black Card',d:'Reach 10,000 lifetime points',g:'gem',c:['#5a5a66','#050507']},
+ {id:'streak',n:'Weekend Warrior',d:'Go out 3 weekends in a row',g:'flame',c:['#ffb020','#ff2d2d']},
+ {id:'vip',n:'Inner Circle',d:'Become a paid member',g:'gem',c:['#ff2d7a','#a63dff']},
+ {id:'round',n:'Buys the Round',d:'Buy someone a drink',g:'glass',c:['#3ddc97','#0a7a55']},
+ {id:'social',n:'Social Butterfly',d:'Add 3 friends',g:'users',c:['#3ab7ff','#1a4fd6']},
+ {id:'match',n:'Heartbreaker',d:'Get a match',g:'heart',c:['#ff5c9a','#c2185b']},
+ {id:'dj',n:'Crowd Mover',d:'Get a song request played',g:'music',c:['#a63dff','#4a148c']},
+ {id:'roller',n:'High Roller',d:'Spend $250 in the app',g:'cash',c:['#ffd778','#2a9d4a']}];
+function myBadges(){const spent=S.pays.reduce((a,x)=>a+(x.total>0?x.total:0),0);return {first:S.checkins.length>0||S.scans.length>0,owl:S.life>=1000,gold:S.life>=2500,black:S.life>=10000,streak:S.streak>=3,vip:S.member,round:S.giftsOut.length>0,social:S.friends.length>=3,match:S.matches.length>0,dj:S.djq.some(x=>x.by==='You'&&x.st==='played'),roller:spent>=250}}
+function badgesOf(n){if(n===me()){const m=myBadges();return BADGES.filter(b=>m[b.id])}const p=PEOPLE[n]||{pts:0,b:[]};return BADGES.filter(b=>(b.id==='owl'&&p.pts>=1000)||(b.id==='gold'&&p.pts>=2500)||(b.id==='black'&&p.pts>=10000)||(p.b||[]).includes(b.id))}
+const medal=(b,lock)=>`<span class="medal" style="${lock?'':`background:linear-gradient(140deg,${b.c[0]},${b.c[1]})`}" title="${b.n}">${ic(b.g)}</span>`;
+function badgeGrid(self,n){if(self){const m=myBadges(),left=BADGES.filter(b=>!m[b.id]);return `<div class="badges">${BADGES.map(b=>`<div class="badge ${m[b.id]?'':'locked'}">${medal(b,!m[b.id])}<span>${b.n}</span></div>`).join('')}</div>${left.length?`<div class="small dim">Next up: ${left.slice(0,2).map(b=>b.n+' ('+b.d.toLowerCase()+')').join(', ')}.</div>`:''}`}
+ const l=badgesOf(n);return l.length?`<div class="badges">${l.map(b=>`<div class="badge">${medal(b)}<span>${b.n}</span></div>`).join('')}</div>`:'<div class="small dim">No badges yet.</div>'}
+function tcard(n,cls,live){const ph=photos(n),i=Math.min(PH[n]||0,ph.length-1),p=PEOPLE[n]||{},self=n===me(),age=self?ageOf(S.user&&S.user.dob):p.age,at=self?'':p.at,bio=self?S.bio:p.bio;
+ return `<div class="tcard ${cls||''}" ${live?`id="swipeCard" data-n="${esc(n)}"`:''}><img src="${ph[i]}" alt="${esc(n)}, photo ${i+1} of ${ph.length}">
+ ${ph.length>1?`<div class="segs">${ph.map((_,k)=>`<i class="${k===i?'on':''}"></i>`).join('')}</div>`:''}
+ ${live?'<span class="stamp2 st-like">LIKE</span><span class="stamp2 st-nope">NOPE</span>':!cls&&ph.length>1?`<button class="tnav l" data-a="ph" data-v="${esc(n)}|-1" aria-label="Previous photo"></button><button class="tnav r" data-a="ph" data-v="${esc(n)}|1" aria-label="Next photo"></button>`:''}
+ <div class="tinfo"><div class="tname">${esc(n)}${age!=null?`<span>${age}</span>`:''}</div>
+ <div class="row wrap" style="gap:6px">${at?`<span class="tag ok">At ${V(at).name} now</span>`:''}${age!=null?`<span class="tag ${age>=21?'ok':'warn'}">${age>=21?'21+':'18+'}</span>`:''}<span class="tag gold">${self?tier():p.tier} tier</span></div>
+ ${badgesOf(n).length?`<div class="mini-b">${badgesOf(n).slice(0,7).map(b=>medal(b)).join('')}</div>`:''}
+ ${bio?`<div class="small">${esc(bio)}</div>`:''}</div></div>`}
+function likeP(n){if(!S.likes.includes(n))S.likes.push(n);S.passes=S.passes.filter(x=>x!==n);
+ if(PEOPLE[n]&&PEOPLE[n].likesYou){if(!S.matches.includes(n))S.matches.unshift(n);notify('friends','It is a match with '+n,'You both liked each other. Say hi or buy them a drink.');open('match',n)}
+ else toast('Liked '+n.split(' ')[0]+'. If they like you back, you match')}
+function giftsInCard(){const g=S.giftsIn.filter(x=>x.status==='paid');return g.length?`<div class="card vip"><h2>Drinks bought for you</h2>${g.map(x=>`<button class="row" data-a="giftCard" data-v="${x.id}" style="width:100%;text-align:left">${av(x.from)}<span class="grow"><b>${esc(x.lines.map(l=>l[0]).join(', '))}</b><div class="small dim">From ${esc(x.from)}${x.note?' · '+esc(x.note):''}</div></span><span class="tag ok">Show QR</span></button>`).join('')}</div>`:''}
+function giftsOutCard(){const g=S.giftsOut;return g.length?`<div class="card"><h2>Drinks you bought</h2>${g.map(x=>`<button class="row" data-a="giftCard" data-v="${x.id}" style="width:100%;text-align:left">${av(x.to)}<span class="grow"><b>${esc(x.lines.map(l=>l[0]).join(', '))}</b><div class="small dim">For ${esc(x.to)} · ${usd(x.total)}</div></span><span class="tag ${x.status==='paid'?'gold':''}">${x.status==='paid'?'Waiting':'Served'}</span></button>`).join('')}</div>`:''}
+const threads=()=>[...new Set(S.matches.concat(Object.keys(S.chats).filter(n=>(S.chats[n]||[]).length)))].filter(n=>canMsg(n)&&!S.blocked.includes(n));
+function swipeView(){const d=deck();if(!d.length)return `<div class="card"><h2>You have seen everyone out tonight</h2><div class="small dim">More members show up as they check in.</div><button class="btn ghost sm" data-a="resetDeck">Start over</button></div>`;
+ const n=d[0],nx=d[1];return `<div class="deck">${nx?tcard(nx,'next'):''}${tcard(n,'',true)}</div>
+ <div class="rbs"><button class="rb pass" data-a="swipe" data-v="L" aria-label="Pass on ${esc(n)}">${ic('x')}</button><button class="rb sm drink" data-a="gift" data-v="${esc(n)}" aria-label="Buy ${esc(n)} a drink">${ic('glass')}</button><button class="rb sm info" data-a="profile" data-v="${esc(n)}" aria-label="Open ${esc(n)}'s profile">${ic('user')}</button><button class="rb like" data-a="swipe" data-v="R" aria-label="Like ${esc(n)}">${ic('heart')}</button></div>
+ <div class="small dim" style="text-align:center">Swipe right to like, left to pass. Tap the photo for more. If you both like each other, you can message.</div>`}
+function matchesView(){const m=S.matches.filter(n=>!S.blocked.includes(n)),lk=Object.keys(PEOPLE).filter(n=>PEOPLE[n].likesYou&&!S.likes.includes(n)&&!S.passes.includes(n)&&!S.blocked.includes(n)).length,t=threads();
+ return `${lk?`<div class="card vip"><b>${lk} ${lk>1?'people like':'person likes'} you</b><div class="small dim">Keep swiping to find out who.</div><button class="btn goldb sm" data-a="soc" data-v="swipe">Keep swiping</button></div>`:''}
+ ${m.length?`<div class="card"><h2>Matches</h2><div class="row wrap" style="gap:14px">${m.map(n=>`<div class="col g6" style="align-items:center;width:62px">${av(n,'lg')}<span class="small">${esc(n.split(' ')[0])}</span></div>`).join('')}</div></div>`:''}
+ <div class="card"><h2>Messages</h2>${t.length?t.map(n=>{const c=S.chats[n]||[],l=c[c.length-1];return `<button class="row" data-a="chat" data-v="${esc(n)}" style="width:100%;text-align:left">${av(n)}<span class="grow"><b>${esc(n)}</b><div class="small dim">${l?esc((l.from==='me'?'You: ':'')+l.txt):'Say hi'}</div></span><span class="tag ${S.matches.includes(n)?'gold':''}">${S.matches.includes(n)?'Match':'Friend'}</span></button>`}).join(''):'<div class="small dim">No conversations yet. Match with someone on Swipe to start one.</div>'}</div>`}
+function friendsView(){const f=S.friends.filter(n=>!S.blocked.includes(n));
+ return `<div class="card"><h2>Your friends</h2>${f.length?f.map(n=>`<div class="row">${av(n)}<span class="grow"><b>${esc(n)}</b><div class="small dim">${PEOPLE[n]&&PEOPLE[n].at?'At '+V(PEOPLE[n].at).name+' now':'Not out right now'}</div></span><button class="rb sm info" data-a="chat" data-v="${esc(n)}" aria-label="Message ${esc(n)}">${ic('chat')}</button><button class="rb sm drink" data-a="gift" data-v="${esc(n)}" aria-label="Buy ${esc(n)} a drink">${ic('glass')}</button></div>`).join(''):'<div class="small dim">No friends yet. Open someone\'s profile and tap Add friend.</div>'}${S.freq.length?`<div class="small dim">Waiting on: ${S.freq.map(esc).join(', ')}</div>`:''}</div>
+ ${giftsInCard()}${giftsOutCard()}`}
+function bindSwipe(){const c=$('swipeCard');if(!c)return;let sx=0,dx=0,down=false;const lk=c.querySelector('.st-like'),np=c.querySelector('.st-nope');
+ c.onpointerdown=e=>{down=true;sx=e.clientX;dx=0;c.style.transition='none';try{c.setPointerCapture(e.pointerId)}catch(_){}};
+ c.onpointermove=e=>{if(!down)return;dx=e.clientX-sx;c.style.transform=`translateX(${dx}px) rotate(${dx/16}deg)`;lk.style.opacity=Math.max(0,Math.min(1,dx/90));np.style.opacity=Math.max(0,Math.min(1,-dx/90))};
+ const end=e=>{if(!down)return;down=false;c.style.transition='transform .22s ease';
+  if(Math.abs(dx)>90){const r=dx>0;c.style.transform=`translateX(${r?640:-640}px) rotate(${r?28:-28}deg)`;setTimeout(()=>{A.swipe(r?'R':'L');render()},190)}
+  else{c.style.transform='';lk.style.opacity=np.style.opacity=0;if(Math.abs(dx)<6&&e.type==='pointerup'){const b=c.getBoundingClientRect();A.ph(c.dataset.n+'|'+(e.clientX-b.left<b.width/2?-1:1));render()}}};
+ c.onpointerup=end;c.onpointercancel=end}
+const REPLY=['Hey! Are you out tonight?','Ha, I was hoping you would swipe right.','I am near the DJ booth. Come say hi.','Thank you for the drink! Next round is on me.'];
+let CF=false;
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],KIND={event:'One event at a time',resident:'Venue promoter, every week'};
 const PROMOS=[{n:'K. Dot',fol:1284},
  {n:'Lux Nights',fol:3400,door:50,bar:10,tables:25,hookah:0,kind:'event',days:['Fri','Sat'],start:'22:00',end:'02:00',bio:'Upscale theme parties and bottle-service crowds.'},
@@ -216,11 +343,11 @@ const NCATS={live:'Live venue updates',friends:'Friends going out',deals:'Deals 
 const PAYN={stripe:'Card, Apple Pay or Google Pay (Stripe)',cashapp:'Cash App',venmo:'Venmo',zelle:'Zelle'};
 const ROLE_L={member:'Member',promoter:'Promoter',owner:'Venue owner',staff:'Staff',dj:'DJ',sec:'Security'};
 const GUESTS=['Maya R.','Dre T.','Lexi P.','Tino G.','Jas W.','Kayla M.'];
-const DEF={user:null,accounts:[],ob:{step:0,via:''},memberPrice:40,tblOn:false,role:'member',tab:{member:'tonight',promoter:'studio',owner:'live',staff:'scan',dj:'booth',sec:'door'},djTipsOn:true,djTipMin:2,member:false,points:1240,life:1840,streak:3,filter:'All',mapOn:false,
+const DEF={photos:[],bio:'',likes:[],passes:[],matches:[],chats:{},friends:[],freq:[],blocked:[],giftsOut:[],giftsIn:[],gcart:{},soc:'swipe',menuV:2,user:null,accounts:[],ob:{step:0,via:''},memberPrice:40,tblOn:false,role:'member',tab:{member:'tonight',promoter:'studio',owner:'live',staff:'scan',dj:'booth',sec:'door'},djTipsOn:true,djTipMin:2,member:false,points:1240,life:1840,streak:3,filter:'All',mapOn:false,
  crowd:{ovia:52,saguaro:78,copper:35,monsoon:64,barrio:41,maingate:88},wait:{ovia:5,saguaro:15,copper:0,monsoon:5,barrio:0,maingate:25},
  liveMsg:'Industry Monday: half-off hookah until midnight.',checkins:[],favs:[],follow:[],going:['duel'],sales:[],scans:[],tickets:[],vouchers:[],
  inGuests:[0,1,3],mute:{},share:false,form:{},bk:{qty:2,table:false,splitTab:false},
- menu:[{id:'m1',name:'Well drink',price:8,cat:'bar',g:'glass'},{id:'m2',name:'House margarita',price:12,cat:'bar',g:'glass'},{id:'m3',name:'Draft beer',price:6,cat:'bar',g:'beer'},{id:'m4',name:'Shot',price:7,cat:'bar',g:'shot'},{id:'m5',name:'Hookah',price:30,cat:'hookah',g:'hookah'},{id:'m6',name:'Hookah refill',price:15,cat:'hookah',g:'hookah'},{id:'m7',name:'Bottle service',price:180,cat:'tables',g:'bottle'},{id:'m8',name:'Water',price:3,cat:'bar',g:'bottle'}],
+ menu:[{id:'m1',name:'Well drink',price:8,cat:'bar',g:'glass',alc:true},{id:'m2',name:'House margarita',price:12,cat:'bar',g:'glass',alc:true},{id:'m3',name:'Draft beer',price:6,cat:'bar',g:'beer',alc:true},{id:'m4',name:'Shot',price:7,cat:'bar',g:'shot',alc:true},{id:'m5',name:'Hookah',price:30,cat:'hookah',g:'hookah'},{id:'m6',name:'Hookah refill',price:15,cat:'hookah',g:'hookah'},{id:'m7',name:'Bottle service',price:180,cat:'tables',g:'bottle'},{id:'m8',name:'Water',price:3,cat:'bar',g:'bottle',alc:false},{id:'m9',name:'Red Bull',price:5,cat:'bar',g:'bottle',alc:false},{id:'m10',name:'Virgin mojito',price:8,cat:'bar',g:'glass',alc:false}],
  cart:{},scart:{},custom:0,orders:[],charges:[],pays:[],pending:null,scanMember:false,lastScan:null,editMenu:false,seq:1,
  payc:{stripe:{on:true,id:'acct_demo_ovia'},cashapp:{on:false,id:''},venmo:{on:false,id:''},zelle:{on:false,id:''}},
  tax:{mode:'pct',val:8.7},
@@ -242,7 +369,9 @@ const DEF={user:null,accounts:[],ob:{step:0,via:''},memberPrice:40,tblOn:false,r
 let S=load(), sheetFn=null, sheetArg=null, toastT, pushT;
 function load(){let s={};try{s=JSON.parse(localStorage.getItem('tnl-v4')||'{}')}catch(e){}
   const hot=window.claude&&window.claude.hot&&window.claude.hot.data; if(hot&&hot.tab)s=hot;
-  const d=JSON.parse(JSON.stringify(DEF)); return Object.assign(d,s,{tab:Object.assign(d.tab,s.tab||{}),split:Object.assign(d.split,s.split||{}),pout:Object.assign(d.pout,s.pout||{})})}
+  const d=JSON.parse(JSON.stringify(DEF)),r=Object.assign(d,s,{tab:Object.assign(d.tab,s.tab||{}),split:Object.assign(d.split,s.split||{}),pout:Object.assign(d.pout,s.pout||{})});
+  if(r.menuV!==2||!s.menuV){r.menu.forEach(m=>{if(m.alc==null)m.alc=m.cat==='bar'&&m.id!=='m8'});['m9','m10'].forEach(id=>{if(!r.menu.some(x=>x.id===id))r.menu.push(DEF.menu.find(x=>x.id===id))});r.menuV=2}
+  return r}
 function save(){if(S.user){S.accounts=S.accounts.filter(a=>a.contact.toLowerCase()!==S.user.contact.toLowerCase()).concat([Object.assign({},S.user,{role:S.role})])}try{localStorage.setItem('tnl-v4',JSON.stringify(S))}catch(e){}}
 try{window.claude&&window.claude.hot&&window.claude.hot.snapshot&&window.claude.hot.snapshot(()=>S)}catch(e){}
 
@@ -261,10 +390,10 @@ const ageBand=()=>{const a=S.user?ageOf(S.user.dob):null;return a==null?null:a>=
 const ageTag=()=>{const b=ageBand();return `<span class="tag ${b==='21+'?'ok':b?'warn':''}">${b?b:'Age not on file'}</span>`};
 function fmtT(t){if(!t)return '';const p=t.split(':').map(Number),h=p[0]%12||12;return h+(p[1]?':'+String(p[1]).padStart(2,'0'):'')+(p[0]<12?' AM':' PM')}
 function fmtD(d){const p=d.split('-').map(Number),x=new Date(p[0],p[1]-1,p[2]);return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][x.getDay()]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][p[1]-1]+' '+p[2]}
-const P={list:'M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01',moon:'M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z',users:'M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1M9.5 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM21 19v-1a4 4 0 0 0-3-3.8M15.5 4.2a3 3 0 0 1 0 5.6',qr:'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z',user:'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 20a8 8 0 0 1 16 0',bell:'M6 16v-5a6 6 0 1 1 12 0v5l1.5 2h-15zM10 20a2 2 0 0 0 4 0',chart:'M4 20V10M10 20V4M16 20v-7M21 20H3',send:'M4 12l16-8-6 16-3-7z',cash:'M3 7h18v10H3zM12 14.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',pulse:'M3 12h4l2-6 4 12 2-6h6',cal:'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4',bag:'M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2',music:'M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z',glass:'M5 4h14l-7 8zM12 12v7M8 20h8',beer:'M6 5h9v15H6zM15 8h3v7h-3',shot:'M7 6h10l-2 13H9z',hookah:'M12 3v5M9 8h6l1 5a4 4 0 0 1-8 0zM12 17v4M8 21h8M16 11c4 0 4 6 1 8',bottle:'M10 3h4v4l2 3v11H8V10l2-3z'};
+const P={heart:'M12 20s-7.5-4.6-7.5-10.2A4.1 4.1 0 0 1 12 7.4a4.1 4.1 0 0 1 7.5 2.4C19.5 15.4 12 20 12 20z',star:'M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.8l-5.2 2.8 1-5.8-4.3-4.1 5.9-.8z',crown:'M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z',flame:'M12 3c1 4 5 5.5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-3.5 2-5 1 1.5 1.5 2 2.5 2 0-2.5-.5-4.5.5-7z',gem:'M6 4h12l3 5-9 11L3 9zM3 9h18M9 4l3 16M15 4l-3 16',x:'M6 6l12 12M18 6L6 18',chat:'M4 5h16v11H9l-5 4z',list:'M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01',moon:'M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z',users:'M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1M9.5 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM21 19v-1a4 4 0 0 0-3-3.8M15.5 4.2a3 3 0 0 1 0 5.6',qr:'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v2h-2zM14 18h2v2h-2zM18 18h2v2h-2z',user:'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 20a8 8 0 0 1 16 0',bell:'M6 16v-5a6 6 0 1 1 12 0v5l1.5 2h-15zM10 20a2 2 0 0 0 4 0',chart:'M4 20V10M10 20V4M16 20v-7M21 20H3',send:'M4 12l16-8-6 16-3-7z',cash:'M3 7h18v10H3zM12 14.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',pulse:'M3 12h4l2-6 4 12 2-6h6',cal:'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4',bag:'M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2',music:'M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z',glass:'M5 4h14l-7 8zM12 12v7M8 20h8',beer:'M6 5h9v15H6zM15 8h3v7h-3',shot:'M7 6h10l-2 13H9z',hookah:'M12 3v5M9 8h6l1 5a4 4 0 0 1-8 0zM12 17v4M8 21h8M16 11c4 0 4 6 1 8',bottle:'M10 3h4v4l2 3v11H8V10l2-3z'};
 const ic=n=>`<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="${P[n]||P.glass}"/></svg>`;
 const hue=n=>PEOPLE[n]?PEOPLE[n].h:n==='You'||n===me()?300:(n.charCodeAt(0)*37)%360;
-const av=(n,cls)=>`<span class="av ${cls||''}" style="--h:${hue(n)}" data-a="profile" data-v="${esc(n)}" role="button" tabindex="0" aria-label="${esc(n)} profile">${esc(n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase())}</span>`;
+const av=(n,cls)=>`<span class="av ${cls||''}" style="--h:${hue(n)}" data-a="profile" data-v="${esc(n)}" role="button" tabindex="0" aria-label="${esc(n)} profile">${pic(n,0)}</span>`;
 function qr(text,cls){try{const q=qrcode(0,'M');q.addData(text);q.make();const n=q.getModuleCount();let d='';for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+=`M${c} ${r}h1v1h-1z`;
   return `<div class="qr ${cls||''}"><svg viewBox="0 0 ${n} ${n}" shape-rendering="crispEdges" role="img" aria-label="QR code"><path d="${d}" fill="#000"/></svg></div>`}
   catch(e){return `<div class="qr ${cls||''}"><svg viewBox="0 0 10 10"><text x="5" y="5.6" font-size="1" text-anchor="middle" fill="#000">${esc(text)}</text></svg></div>`}}
@@ -331,7 +460,7 @@ function verifyScreen(r){const own=r==='owner',st=(S.user.ver||{})[r]||'none',ap
 /* ---------- member ---------- */
 function venueCard(v){const live=v.id==='ovia';return `<div class="card" data-a="venue" data-v="${v.id}" role="button" tabindex="0">
   <div class="art" style="--h:${v.h}"><div class="over">${live?'<span class="tag live">LIVE</span>':''}${crowdTag(v)}<span class="tag">${S.wait[v.id]?S.wait[v.id]+' min line':'No line'}</span><span class="tag">${v.cover?usd(v.cover)+' cover':'No cover'}</span></div></div>
-  <div class="row between"><div><h3>${v.name}</h3><div class="small dim">${v.area} · ${v.tags.join(' · ')}</div></div>${v.friends.length?`<div class="avs">${v.friends.map(f=>av(f)).join('')}</div>`:''}</div>
+  <div class="row between"><div><h3>${v.name}</h3><div class="small dim">${v.area} · ${v.tags.join(' · ')}</div></div>${here(v.id).length?`<div class="avs">${here(v.id).slice(0,4).map(f=>av(f)).join('')}</div>`:''}</div>
   ${live?`<div class="small">${esc(S.liveMsg)}</div>`:`<div class="small gold">${v.deal}</div>`}
   <div class="meter"><i style="width:${S.crowd[v.id]}%"></i></div></div>`}
 function mapView(list){return `<div class="map"><svg viewBox="0 0 100 78" aria-label="Simplified map of central Tucson, not to scale">
@@ -352,8 +481,10 @@ social(){const feed=S.posts.map((p,i)=>`<div class="card"><div class="row">${av(
    <div class="row"><button class="btn ghost sm" data-a="like" data-v="${i}">${S.liked.includes(i)?'Liked':'Like'} · ${p.likes+(S.liked.includes(i)?1:0)}</button><button class="btn ghost sm" data-a="venueByName" data-v="${esc(p.at)}">See the room</button></div></div>`).join('');
   const board=[['Maya R.',6420],[me(),S.life],['Lexi P.',1510],['Tino G.',980]].sort((a,b)=>b[1]-a[1]).map((r,i)=>`<div class="kv" data-a="profile" data-v="${esc(r[0])}"><span>${i+1}. ${esc(r[0])}</span><b class="${r[0]===me()?'gold':''}">${num(r[1])} pts</b></div>`).join('');
   const head=`<div class="col g6"><span class="eyebrow">Members only</span><h1>The <em>circle</em></h1></div>`;
-  if(!S.member)return head+`<div class="lock"><div class="col blur" aria-hidden="true">${feed}</div><div class="veil"><div class="card vip" style="width:100%"><h3>Join to see who is out tonight</h3><div class="small dim">The feed, friend check-ins, profiles and the points leaderboard are for paying members.</div><button class="btn goldb full" data-a="join">See membership · ${usd(S.memberPrice)} a month</button></div></div></div>`;
-  return head+`<div class="card"><div class="row between"><h2>Out right now</h2><span class="tag ok">6 friends</span></div>${VENUES.filter(v=>v.friends.length).map(v=>`<div class="row"><div class="avs">${v.friends.map(f=>av(f)).join('')}</div><button class="small" data-a="venue" data-v="${v.id}">${v.name}</button></div>`).join('')}<div class="small dim">Tap a face to open their profile.</div></div>
+  if(!S.member)return head+`<div class="lock"><div class="col blur" aria-hidden="true">${feed}</div><div class="veil"><div class="card vip" style="width:100%"><h3>Join to see who is out tonight</h3><div class="small dim">Swiping, matches, messages, who is out, the feed and the leaderboard are for paying members.</div><button class="btn goldb full" data-a="join">See membership · ${usd(S.memberPrice)} a month</button></div></div></div>`;
+  const segs=`<div class="chips">${[['swipe','Swipe'],['matches','Matches'+(S.matches.length?' · '+S.matches.length:'')],['friends','Friends'],['feed','Feed']].map(x=>`<button class="chip ${S.soc===x[0]?'on':''}" data-a="soc" data-v="${x[0]}">${x[1]}</button>`).join('')}</div>`;
+  if(S.soc==='swipe')return head+segs+swipeView();if(S.soc==='matches')return head+segs+matchesView();if(S.soc==='friends')return head+segs+friendsView();
+  return head+segs+`<div class="card"><div class="row between"><h2>Out right now</h2><span class="tag ok">${Object.values(PEOPLE).filter(x=>x.at).length} members out</span></div>${VENUES.filter(v=>here(v.id).length).map(v=>`<div class="row"><div class="avs">${here(v.id).slice(0,5).map(f=>av(f)).join('')}</div><button class="small" data-a="venue" data-v="${v.id}">${v.name} · ${here(v.id).length}</button></div>`).join('')}<div class="small dim">Tap a face to open their profile.</div></div>
   <div class="card"><label class="f" for="postTxt">Post to your circle</label><textarea id="postTxt" data-m="postTxt" placeholder="Where are you headed tonight?">${esc(fv('postTxt',''))}</textarea><div class="row"><select id="postAt" data-m="postAt" aria-label="Tag a venue">${VENUES.map(v=>`<option ${fv('postAt','')===v.name?'selected':''}>${v.name}</option>`).join('')}</select><button class="btn sm" data-a="post">Post</button></div></div>
   ${feed}<div class="card"><h2>November leaderboard</h2><div>${board}</div><div class="small dim">Top 3 each month win a free VIP table.</div></div>`},
 scan(){const open=S.charges.filter(c=>c.status==='open');return `<div class="col g6"><span class="eyebrow">Scan</span><h1>Get scanned, <em>get points</em></h1></div>
@@ -361,7 +492,7 @@ scan(){const open=S.charges.filter(c=>c.status==='open');return `<div class="col
   <div class="card"><h2>Pay a bartender's code</h2><div class="small dim">When the bartender shows a QR for your total, take a photo of it here and pay from your phone.</div>${camBtn('scan-member','Open camera and scan to pay')}
    ${open.length?open.map(c=>`<div class="row between"><span>OVIA bar · ${usd(c.total)}<div class="small dim">${esc(c.lines.map(l=>l[0]).join(', '))}</div></span><button class="btn sm" data-a="payCharge" data-v="${c.id}">Pay</button></div>`).join(''):'<div class="small dim">No open bar codes waiting for you.</div>'}</div>
   <div class="card"><h2>Points from scans</h2>${S.scans.length?S.scans.slice(0,6).map(s=>`<div class="kv"><span>${esc(s.what)}</span><b>${s.amt?usd(s.amt)+' ':''}<span class="gold">+${num(s.pts)} pts</span></b></div>`).join(''):'<div class="small dim">Nothing yet tonight. Your points land here the moment staff scan you.</div>'}</div>`},
-bar(){const c=cartOf(S.cart,0),mine=S.orders;return `<div class="col g6"><span class="eyebrow">You are at OVIA Lounge</span><h1>Tap to <em>order</em></h1></div>
+bar(){const c=cartOf(S.cart,0),mine=S.orders;return `<div class="col g6"><span class="eyebrow">You are at OVIA Lounge</span><h1>Tap to <em>order</em></h1></div>${giftsInCard()}
   <div class="grid3">${S.menu.map(it=>tileItem(it,S.cart,'add')).join('')}</div>
   <div class="card"><div class="row between"><span><b>Bring it to my table</b><div class="small dim">${S.member?'A server brings your drinks or hookah to you.':'Table service is a member perk.'}</div></span>${S.member?`<button class="sw ${S.tblOn?'on':''}" data-a="tblToggle" role="switch" aria-checked="${S.tblOn}" aria-label="Bring it to my table"></button>`:`<button class="btn goldb sm" data-a="join">Join</button>`}</div>
    ${S.member&&S.tblOn?`<label class="f" for="tblNo">Your table number<input id="tblNo" type="text" inputmode="numeric" maxlength="4" data-m="tblNo" value="${esc(fv('tblNo',''))}" placeholder="12"></label>${S.tickets.some(t=>t.table)?'<div class="small gold">You have a table reserved. The number is on the table stand.</div>':'<div class="small dim">The number is on the stand at your table.</div>'}`:''}</div>
@@ -371,12 +502,16 @@ bar(){const c=cartOf(S.cart,0),mine=S.orders;return `<div class="col g6"><span c
   ${mine.length?`<h2>Your orders</h2>${mine.map(o=>`<button class="card" data-a="order" data-v="${o.id}"><div class="row between"><h3>Order ${o.id} · ${usd(o.total)}</h3><span class="tag ${o.status!=='served'?'ok':''}">${o.table?(o.status==='paid'?'Sent to your server':o.status==='out'?'On the way':'Delivered')+' · table '+esc(o.table):o.status==='paid'?'Paid · show code':'Picked up'}</span></div><div class="small dim">${esc(o.lines.map(l=>l[0]).join(', '))}</div></button>`).join('')}`:''}`},
 rewards(){const n=nextTier();return `<div class="col g6"><span class="eyebrow">Points</span><div class="big gold">${num(S.points)}</div><div class="small dim">${tier()} tier · ${S.streak} weekend streak · ${rate()} points per dollar</div></div>
   ${n?`<div class="card"><div class="row between small"><span>${num(n.at-S.life)} points to ${n.n}</span><span class="dim">${num(S.life)} lifetime</span></div><div class="meter goldm"><i style="width:${Math.min(100,(S.life-n.from)/(n.at-n.from)*100)}%"></i></div></div>`:''}
+  <div class="card"><h2>Your badges</h2>${badgeGrid(true)}</div>
   <h2>Spend your points</h2>
   ${REWARDS.map(r=>`<div class="card"><div class="row between"><div><h3>${r.name}</h3><div class="small dim">${r.where}</div></div><button class="btn sm ${S.points>=r.cost?'goldb':'ghost'}" data-a="redeem" data-v="${r.id}" ${S.points>=r.cost?'':'disabled'}>${num(r.cost)} pts</button></div></div>`).join('')}
   ${S.vouchers.length?`<h2>Your vouchers</h2>${S.vouchers.map((v,i)=>`<button class="card" data-a="voucher" data-v="${i}"><div class="row between"><h3>${v.name}</h3><span class="tag ${v.used?'':'ok'}">${v.used?'Used':'Ready to scan'}</span></div></button>`).join('')}`:''}
   <div class="card"><h2>More ways to earn</h2><div><div class="kv"><span>Get scanned in at the door</span><b>+50</b></div><div class="kv"><span>Bring a friend who joins (code NIGHT417)</span><b>+500</b></div><div class="kv"><span>Rate your night the next morning</span><b>+25</b></div><div class="kv"><span>Three weekends in a row</span><b>+300</b></div></div></div>`},
 me(){return `<div class="row">${av(me(),'lg')}<div class="col g6"><h1 style="font-size:21px">${esc(me())}</h1><div class="row wrap">${ageTag()}<span class="tag gold">${tier()} tier</span><span class="tag">${S.member?'Member · renews Dec 9':'Free account'}</span></div></div></div>
   ${S.member?'':`<button class="btn goldb full" data-a="join">Become a member · ${usd(S.memberPrice)} a month</button>`}
+  <div class="card"><div class="row between"><h2>Your photos</h2><span class="small dim">${S.photos.filter(Boolean).length} of 3</span></div><div class="slots">${[0,1,2].map(i=>S.photos[i]?`<div class="slot"><img src="${S.photos[i]}" alt="Your photo ${i+1}"><button class="x" data-a="rmPhoto" data-v="${i}" aria-label="Remove photo ${i+1}">×</button></div>`:`<label class="slot">+ Add photo<input type="file" accept="image/*" data-f="photo${i}"></label>`).join('')}</div>
+   <label class="f" for="bioIn">About you<input id="bioIn" type="text" maxlength="90" data-s="bio" value="${esc(S.bio)}" placeholder="What does a good night out look like?"></label><button class="btn ghost full" data-a="profile" data-v="${esc(me())}">Preview my profile</button></div>
+  ${giftsInCard()}${giftsOutCard()}
   <button class="btn ghost full" data-a="tab" data-v="rewards">Rewards · ${num(S.points)} points</button>
   <div class="card"><h2>Paid in the app</h2>${S.pays.length?S.pays.map(p=>`<div class="kv"><span>${esc(p.what)}<div class="small dim">${PAYN[p.method].replace(/ \(.*/,'')}${p.pts?' · +'+num(p.pts)+' pts':''}</div></span><b>${usd(p.total)} <span class="tag ok">Paid</span></b></div>`).join(''):'<div class="small dim">Tickets, drinks, hookah and membership you pay for in the app are listed here.</div>'}</div>
   <div class="card"><h2>Tickets</h2>${S.tickets.length?S.tickets.map((t,i)=>`<button class="kv" data-a="ticket" data-v="${i}"><span>${esc(E(t.ev).name)} · ${t.qty} ${t.qty>1?'guests':'guest'}</span><b class="gold">${t.used?'Used':'Open'}</b></button>`).join(''):'<div class="small dim">No tickets yet. Pick an event on the Tonight tab.</div>'}</div>
@@ -387,6 +522,7 @@ me(){return `<div class="row">${av(me(),'lg')}<div class="col g6"><h1 style="fon
 
 /* ---------- staff tools shared by promoter, owner and staff ---------- */
 function scanScreen(title,extra,mode){const r=S.lastScan,wait=[];
+  if(mode!=='sec')S.giftsOut.concat(S.giftsIn).forEach(g=>{if(g.status==='paid')wait.push(['Gift · '+g.lines.map(l=>l[0]).join(', '),'For '+g.to+' from '+g.from,'TNL:G:'+g.id,'Validate'])});
   if(mode!=='sec')S.orders.forEach(o=>{if(o.status==='paid'&&!o.table)wait.push([`Order ${o.id} · ${usd(o.total)}`,o.lines.map(l=>l[0]).join(', '),'TNL:O:'+o.id,'Validate'])});
   S.tickets.forEach((t,i)=>{if(!t.used)wait.push([`Ticket · ${E(t.ev).name}`,t.qty+(t.qty>1?' guests':' guest'),'TNL:T:'+i,'Admit'])});
   if(mode!=='sec')S.vouchers.forEach((v,i)=>{if(!v.used)wait.push(['Reward · '+v.name,v.where,'TNL:V:'+i,'Honor'])});
@@ -403,7 +539,7 @@ function sellScreen(canEdit){const c=cartOf(S.scart,+S.custom||0);
   <div class="row"><input type="number" inputmode="decimal" min="0" id="custAmt" data-m="custAmt" value="${esc(fv('custAmt',''))}" placeholder="Other amount $" aria-label="Other amount in dollars"><button class="btn ghost sm" data-a="addCustom">Add</button></div>
   ${c.sub?`<div class="card vip">${cartCard(c,'clearS')}<button class="btn goldb full" data-a="mkCharge">Show QR for ${usd(c.total)}</button><button class="btn ghost full" data-a="cashSale">Paid in cash · record sale</button><div class="small dim">${S.scanMember?'Member 00417 is scanned in, so a cash sale gives them points.':'Scan the member first if a cash sale should earn points.'}</div></div>`:'<div class="note">Tap items to build the tab. Then show a QR the guest scans to pay, or record a cash sale.</div>'}
   ${canEdit?`<div class="row between"><h2>Menu and prices</h2><button class="btn ghost sm" data-a="editMenu">${S.editMenu?'Done editing':'Edit menu'}</button></div>${S.editMenu?menuEditor():''}`:''}`}
-function menuEditor(){return `${S.menu.map(it=>`<div class="card"><div class="row"><span class="ph sm">${it.img?`<img src="${it.img}" alt="">`:ic(it.g)}</span><input type="text" data-s="menu.${it.id}.name" value="${esc(it.name)}" aria-label="Item name"><input type="number" inputmode="decimal" min="0" style="width:84px;flex:0 0 84px" data-s="menu.${it.id}.price" value="${it.price}" aria-label="Price in dollars"></div><div class="row">${upBtn(it.id,it.img?'Change photo':'Add photo')}<button class="btn ghost sm" data-a="delItem" data-v="${it.id}">Remove</button></div></div>`).join('')}
+function menuEditor(){return `${S.menu.map(it=>`<div class="card"><div class="row"><span class="ph sm">${it.img?`<img src="${it.img}" alt="">`:ic(it.g)}</span><input type="text" data-s="menu.${it.id}.name" value="${esc(it.name)}" aria-label="Item name"><input type="number" inputmode="decimal" min="0" style="width:84px;flex:0 0 84px" data-s="menu.${it.id}.price" value="${it.price}" aria-label="Price in dollars"></div><div class="row">${upBtn(it.id,it.img?'Change photo':'Add photo')}${it.cat==='bar'?`<button class="chip ${it.alc?'on':''}" data-a="alcT" data-v="${it.id}" aria-pressed="${!!it.alc}">${it.alc?'Alcohol, 21+':'No alcohol'}</button>`:''}<button class="btn ghost sm" data-a="delItem" data-v="${it.id}">Remove</button></div></div>`).join('')}
   <div class="card vip"><h2>Add an item</h2><div class="two"><label class="f" for="niName">Name<input id="niName" type="text" data-m="niName" value="${esc(fv('niName',''))}" placeholder="Lemon drop"></label><label class="f" for="niPrice">Price $<input id="niPrice" type="number" inputmode="decimal" min="0" data-m="niPrice" value="${esc(fv('niPrice',''))}" placeholder="11"></label></div>
   <label class="f" for="niCat">Counts toward<select id="niCat" data-m="niCat">${['bar','hookah','tables'].map(k=>`<option value="${k}" ${fv('niCat','bar')===k?'selected':''}>${CATS[k]} sales</option>`).join('')}</select></label>
   ${S.form.itImg?`<img class="thumb" src="${S.form.itImg}" alt="New item photo">`:''}<div class="row">${upBtn('item',S.form.itImg?'Change photo':'Upload photo')}<button class="btn sm" data-a="addItem">Add to menu</button></div></div>`}
@@ -507,6 +643,7 @@ scan(){return scanScreen('Host and bartender scanner')},
 sell(){return sellScreen(false)},
 orders(){const o=S.orders.filter(x=>!x.table),tb=S.orders.filter(x=>x.table),ch=S.charges;return `<div class="col g6"><span class="eyebrow">Bar and floor tickets</span><h1>Orders and <em>codes</em></h1></div>
   <div class="card ${tb.some(x=>x.status!=='served')?'vip':''}"><h2>Table service</h2>${tb.length?tb.map(x=>`<div class="row between"><span class="grow"><b>Table ${esc(x.table)}</b> · order ${x.id} · ${usd(x.total)}<div class="small dim">${esc(x.lines.map(l=>l[0]).join(', '))} · paid in the app</div></span>${x.status==='paid'?`<button class="btn goldb sm" data-a="tblTake" data-v="${x.id}">Take it</button>`:x.status==='out'?`<button class="btn sm" data-a="tblDone" data-v="${x.id}">Delivered</button>`:'<span class="tag">Delivered</span>'}</div>`).join(''):'<div class="small dim">No table orders yet. Members at a table order from their phone and it lands here with the table number.</div>'}</div>
+  ${(()=>{const g=S.giftsOut.concat(S.giftsIn);return `<div class="card ${g.some(x=>x.status==='paid')?'vip':''}"><h2>Drinks bought for guests</h2>${g.length?g.map(x=>`<div class="row between"><span class="grow"><b>${esc(x.lines.map(l=>l[0]).join(', '))}</b><div class="small dim">For ${esc(x.to)} from ${esc(x.from)} · paid in the app</div></span>${x.status==='paid'?`<button class="btn goldb sm" data-a="demoScan" data-v="TNL:G:${x.id}">Validate</button>`:'<span class="tag">Served</span>'}</div>`).join(''):'<div class="small dim">None yet. When a member buys someone a drink, the recipient shows you a QR to scan.</div>'}</div>`})()}
   <div class="card"><h2>Paid in the app</h2>${o.length?o.map(x=>`<div class="row between"><span class="grow">Order ${x.id} · ${usd(x.total)}<div class="small dim">${esc(x.lines.map(l=>l[0]).join(', '))}</div></span>${x.status==='paid'?`<button class="btn sm" data-a="demoScan" data-v="TNL:O:${x.id}">Validate</button>`:'<span class="tag">Picked up</span>'}</div>`).join(''):'<div class="small dim">No app orders yet.</div>'}</div>
   <div class="card"><h2>QR tabs you created</h2>${ch.length?ch.map(x=>`<button class="row between" data-a="charge" data-v="${x.id}" style="width:100%;text-align:left"><span class="grow">${usd(x.total)}<div class="small dim">${esc(x.lines.map(l=>l[0]).join(', '))}</div></span><span class="tag ${x.status==='paid'?'ok':'warn'}">${x.status==='paid'?'Paid':'Waiting'}</span></button>`).join(''):'<div class="small dim">None yet. Build a tab on the Sell screen.</div>'}</div>`},
 pay(){return payScreen('staff','Host pay','hostCost')}
@@ -540,8 +677,8 @@ const SH={
 venue(id){const v=V(id),live=id==='ovia',inn=S.checkins.includes(id);return `<div class="art tall" style="--h:${v.h}"><div class="over">${live?'<span class="tag live">LIVE</span>':''}${v.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div></div>
   <div class="row between"><div><h1 style="font-size:21px">${v.name}</h1><div class="small dim">${v.addr==='Sample venue'?v.area+' · sample venue':v.addr+', Tucson'} · ${v.open}</div></div><button class="btn ghost sm" data-a="fav" data-v="${id}">${S.favs.includes(id)?'Saved':'Save'}</button></div>
   ${live?`<div class="card"><span class="eyebrow">Live update</span>${esc(S.liveMsg)}</div>`:''}
-  <div class="tiles"><div class="tile"><b>${S.crowd[id]}%</b><span>of ${v.cap} capacity</span></div><div class="tile"><b>${S.wait[id]?S.wait[id]+' min':'None'}</b><span>Line at the door</span></div><div class="tile"><b>${v.cover?usd(v.cover):'Free'}</b><span>Cover tonight</span></div><div class="tile"><b>${v.friends.length}</b><span>Friends here now</span></div></div>
-  ${v.friends.length?`<div class="row"><div class="avs">${v.friends.map(f=>av(f)).join('')}</div><span class="small dim">${v.friends.join(', ')}</span></div>`:''}
+  <div class="tiles"><div class="tile"><b>${S.crowd[id]}%</b><span>of ${v.cap} capacity</span></div><div class="tile"><b>${S.wait[id]?S.wait[id]+' min':'None'}</b><span>Line at the door</span></div><div class="tile"><b>${v.cover?usd(v.cover):'Free'}</b><span>Cover tonight</span></div><div class="tile"><b>${here(id).length}</b><span>Members here now</span></div></div>
+  ${here(id).length?`<div class="card"><div class="row between"><h2>Who is here</h2><span class="tag ok">${here(id).length} ${here(id).length>1?'members':'member'}</span></div>${S.member?`<div class="here">${here(id).map(n=>`<div class="hp">${av(n)}<span>${esc(n===me()?'You':n.split(' ')[0])}</span></div>`).join('')}</div><div class="small dim">Tap a face to see their profile.</div>`:`<div class="here blur" aria-hidden="true">${here(id).map(n=>`<div class="hp"><span class="av">${pic(n)}</span></div>`).join('')}</div><button class="btn goldb full" data-a="join">Join to see who is here</button>`}</div>`:''}
   <div class="card vip"><span class="eyebrow" style="color:var(--gold)">Tonight's deal</span>${v.deal}</div>
   <button class="btn full" data-a="checkin" data-v="${id}" ${inn?'disabled':''}>${inn?'Checked in':'Check in · +50 points'}</button>
   ${live?`<div class="row"><button class="btn ghost sm grow" data-a="goBar">Order drinks or hookah</button><button class="btn ghost sm grow" data-a="songSheet">Request a song</button></div><button class="btn ghost sm" data-a="event" data-v="ind">Pay the door and reserve a table</button>`:''}
@@ -585,12 +722,34 @@ song(){const tip=+S.form.sgTip||0,on=S.djTipsOn,due=myDue();return `<span class=
    <label class="f" for="sgTip">Or type an amount $<input id="sgTip" type="number" inputmode="decimal" min="0" data-m="sgTip" data-r="1" value="${tip||''}" placeholder="${S.djTipMin} minimum"></label>
    <div class="small dim">You pay nothing now. You only owe the tip once the DJ confirms they played your song. Bigger bounties sit higher on the DJ's list.</div></div>`}
   <button class="btn full" data-a="sendSong">${tip>0&&on&&!due?'Post '+usd(tip)+' bounty and send':'Send to the DJ · 100 points'}</button><div class="small dim">${tip>0&&on&&!due?'No points needed with a bounty.':'You have '+num(S.points)+' points.'} You get an alert when the DJ plays it.</div>`},
-profile(n){const p=PEOPLE[n];if(!p)return `<div class="row">${av(n,'lg')}<h1 style="font-size:21px">${esc(n)}</h1></div><div class="small dim">This guest has not set up a public profile yet.</div>`;
-  const posts=S.posts.filter(x=>x.who===n),at=VENUES.find(v=>v.friends.includes(n)),f=S.follow.includes(n);
-  return `<div class="row">${av(n,'lg')}<div class="col g6"><h1 style="font-size:21px">${esc(n)}</h1><div class="row wrap"><span class="tag gold">${p.tier} tier</span><span class="tag">${num(p.pts)} pts</span>${at?`<span class="tag ok">At ${at.name} now</span>`:''}</div></div></div>
-  <div>${esc(p.bio)}</div><div class="row"><button class="btn sm grow ${f?'ghost':''}" data-a="follow" data-v="${esc(n)}">${f?'In your circle':'Add to my circle'}</button>${at?`<button class="btn ghost sm grow" data-a="venue" data-v="${at.id}">Join them</button>`:''}</div>
-  <div class="card"><h2>Usual spots</h2><div class="row wrap">${p.spots.map(s=>`<button class="tag" data-a="venueByName" data-v="${s}">${s}</button>`).join('')}</div></div>
-  ${posts.length?`<h2>Recent posts</h2>${posts.map(x=>`<div class="card"><div class="small dim">at ${esc(x.at)} · ${x.t}</div>${esc(x.txt)}</div>`).join('')}`:''}`},
+profile(n){const self=n===me(),p=PEOPLE[n];if(!p&&!self)return `<div class="row">${av(n,'lg')}<h1 style="font-size:21px">${esc(n)}</h1></div><div class="small dim">This guest has not set up a public profile yet.</div>`;
+  if(self)return `${tcard(n)}<div class="card"><h2>Your badges</h2>${badgeGrid(true)}</div><button class="btn ghost full" data-a="editMe">Edit photos and bio</button>`;
+  const posts=S.posts.filter(x=>x.who===n),liked=S.likes.includes(n),mt=S.matches.includes(n),fr=S.friends.includes(n),rq=S.freq.includes(n),first=esc(n.split(' ')[0]);
+  return `${tcard(n)}
+  ${!S.member?`<div class="card vip"><h3>Join to connect with ${first}</h3><div class="small dim">Likes, friends, messages and buying drinks are for members.</div><button class="btn goldb full" data-a="join">Become a member · ${usd(S.memberPrice)} a month</button></div>`:
+  `<div class="rbs">${mt?'':`<button class="rb pass" data-a="profPass" data-v="${esc(n)}" aria-label="Pass">${ic('x')}</button>`}<button class="rb drink" data-a="gift" data-v="${esc(n)}" aria-label="Buy ${first} a drink">${ic('glass')}</button>${mt?`<button class="rb info" data-a="chat" data-v="${esc(n)}" aria-label="Message ${first}">${ic('chat')}</button>`:`<button class="rb like" data-a="profLike" data-v="${esc(n)}" aria-label="Like ${first}" ${liked?'disabled':''}>${ic('heart')}</button>`}</div>
+  <div class="small dim" style="text-align:center">${mt?'You matched. Messages are private between you two.':liked?'You liked '+first+'. If they like you back, you match.':'Like them, and if they like you back you can message.'}</div>
+  <div class="row"><button class="btn sm grow ${fr||rq?'ghost':''}" data-a="addFriend" data-v="${esc(n)}">${fr?'Friends':rq?'Request sent':'Add friend'}</button>${canMsg(n)?`<button class="btn ghost sm grow" data-a="chat" data-v="${esc(n)}">Message</button>`:''}${p.at?`<button class="btn ghost sm grow" data-a="venue" data-v="${p.at}">Join them</button>`:''}</div>`}
+  <div class="card"><h2>Badges</h2>${badgeGrid(false,n)}</div>
+  <div class="card"><h2>Usual spots</h2><div class="row wrap">${p.spots.map(x=>`<button class="tag" data-a="venueByName" data-v="${x}">${x}</button>`).join('')}</div></div>
+  ${posts.length?`<h2>Recent posts</h2>${posts.map(x=>`<div class="card"><div class="small dim">at ${esc(x.at)} · ${x.t}</div>${esc(x.txt)}</div>`).join('')}`:''}
+  ${S.member?`<div class="row" style="justify-content:center"><button class="btn ghost sm" data-a="block" data-v="${esc(n)}">Block</button><button class="btn ghost sm" data-a="report" data-v="${esc(n)}">Report</button></div>`:''}`},
+match(n){return `<div class="col" style="text-align:center"><span class="eyebrow">You both swiped right</span><h1>It is a <em>match</em></h1><div class="match">${av(me())}${av(n)}</div><div class="small dim">You and ${esc(n)} liked each other. Messages are private between you two.</div></div>
+  <button class="btn full" data-a="chat" data-v="${esc(n)}">${ic('chat')} Send a message</button><button class="btn goldb full" data-a="gift" data-v="${esc(n)}">${ic('glass')} Buy ${esc(n.split(' ')[0])} a drink · 2x points</button><button class="btn ghost full" data-a="closeSheet">Keep swiping</button>`},
+chat(n){const c=S.chats[n]||[],first=esc(n.split(' ')[0]);if(!canMsg(n))return `<h1 style="font-size:21px">Match first</h1><div class="small dim">You can message ${first} once you both like each other or you are friends.</div>`;
+  return `<div class="row">${av(n)}<div class="grow"><b>${esc(n)}</b><div class="small dim">${S.matches.includes(n)?'Matched':'Friends'} · private</div></div><button class="btn goldb sm" data-a="gift" data-v="${esc(n)}">Buy a drink</button></div>
+  <div class="bubs">${c.length?c.map(x=>`<div class="bub ${x.gift?'gift':x.from}">${esc(x.txt)}</div>`).join(''):`<div class="small dim" style="text-align:center">Say hi to ${first}.</div>`}</div>
+  <div class="row"><input type="text" id="chatIn" data-m="chatIn" maxlength="300" value="${esc(fv('chatIn',''))}" placeholder="Message ${first}" aria-label="Message ${first}" autocomplete="off"><button class="btn sm" data-a="send" data-v="${esc(n)}">Send</button></div>`},
+gift(n){const p=PEOPLE[n]||{},u21=(p.age||21)<21,items=S.menu.filter(it=>it.cat==='bar'&&(!u21||!it.alc)),c=cartOf(S.gcart,0),pts=Math.round(c.sub*rate()*2),first=esc(n.split(' ')[0]);
+  return `<div class="row">${av(n,'lg')}<div class="col g6"><span class="eyebrow">Send a drink</span><h1 style="font-size:21px">Buy ${first} a drink</h1></div></div>
+  ${u21?`<div class="card bad"><div class="small">${first} is 18+ but under 21, so only non-alcoholic drinks can be sent.</div></div>`:''}
+  <div class="grid3">${items.map(it=>tileItem(it,S.gcart,'gadd')).join('')}</div>
+  <label class="f" for="gNote">Note, optional<input id="gNote" type="text" maxlength="80" data-m="gNote" value="${esc(fv('gNote',''))}" placeholder="First round is on me"></label>
+  ${c.sub?`<div class="card vip">${cartCard(c,'gclear')}<div class="kv"><span>You earn, double points</span><b class="gold">+${num(pts)} pts</b></div><button class="btn goldb full" data-a="giftPay" data-v="${esc(n)}">Pay ${usd(c.total)} and send</button></div>`:`<div class="note">Tap a drink. It lands in ${first}'s app with a QR code their server scans. You earn double points.</div>`}`},
+giftCard(id){const g=S.giftsOut.concat(S.giftsIn).find(x=>x.id===id),mine=g.to===me(),done=g.status!=='paid';
+  return `${mine?'':`<span class="eyebrow">What ${esc(g.to.split(' ')[0])} sees in their app</span>`}<div class="ticket" style="background:linear-gradient(160deg,#e9a020,#ff2d7a);${done?'filter:saturate(.35)':''}"><div class="row between"><b style="font:800 13px var(--display)">A DRINK FOR ${esc(g.to.split(' ')[0].toUpperCase())}</b><span class="stamp ${done?'used':''}">${done?'SERVED':'PAID'}</span></div>
+  <div class="row">${av(g.from)}<div><b>From ${esc(g.from===me()?'you':g.from)}</b>${g.note?`<div class="small">"${esc(g.note)}"</div>`:''}</div></div>
+  <div>${g.lines.map(l=>`<div class="row between small"><span>${esc(l[0])}</span><span>${usd(l[1])}</span></div>`).join('')}</div>${qr('TNL:G:'+g.id)}<div class="small" style="text-align:center">${done?'This drink has been served.':'Show your server or bartender. They scan it once and bring the drink. It is already paid.'}</div></div>`},
 promos(){return `<span class="eyebrow">Promoters in the app</span><h1 style="font-size:21px">Pick a <em>promoter</em></h1>
   ${PROMOS.map(x=>{const p=promo(x.n);return `<button class="card ${S.split.promoter===p.n?'vip':''}" data-a="promoOpen" data-v="${esc(p.n)}"><div class="row"><span class="av" style="--h:${hue(p.n)}">${esc(p.n.split(' ').map(w=>w[0]).join('').slice(0,2))}</span><div class="grow"><b>${esc(p.n)}</b><div class="small dim">${num(p.fol)} followers · ${KIND[p.kind].toLowerCase()}</div></div>${S.split.promoter===p.n?'<span class="tag gold">Current</span>':'<span class="tag ok">Verified</span>'}</div><div class="small">${sched(p)}</div><div class="small dim">Asks: door ${p.door}% · bar ${p.bar}% · tables ${p.tables}% · hookah ${p.hookah}%</div></button>`}).join('')}
   <div class="note">Only K. Dot is a live account in this prototype. The other three are sample promoters.</div>`},
@@ -614,13 +773,13 @@ report(id){const e=E(id),c=calc(e),h=e.hours,mx=h?Math.max(...h):0;return `<div 
 };
 function bookQuote(e){const b=S.bk,door=b.qty*e.door,code=String(fv('promo','KDOT')).trim().toUpperCase(),cd=S.codes.find(c=>c.code===code),pct=cd?cd.pct:0,disc=door*pct/100,fee=S.member?0:2*b.qty,sub=door-disc+(b.table?100:0);return {door,code,pct,disc,fee,sub,total:sub+fee}}
 function open(fn,arg){sheetFn=fn;sheetArg={v:arg};drawSheet();$('sheet').classList.add('open');$('pane').scrollTop=0}
-function drawSheet(){if(!sheetFn)return;const y=$('pane').scrollTop;$('pane').innerHTML=`<button class="close" data-a="closeSheet" aria-label="Close">×</button>`+SH[sheetFn](sheetArg.v);$('pane').scrollTop=y}
+function drawSheet(){if(!sheetFn)return;const y=$('pane').scrollTop;$('pane').innerHTML=`<button class="close" data-a="closeSheet" aria-label="Close">×</button>`+SH[sheetFn](sheetArg.v);$('pane').scrollTop=y;if(sheetFn==='chat'){$('pane').scrollTop=1e6;if(CF&&$('chatIn')){$('chatIn').focus();CF=false}}}
 function closeSheet(){sheetFn=null;$('sheet').classList.remove('open')}
 function logIn(a){S.user=JSON.parse(JSON.stringify(a));S.user.ver=S.user.ver||{};S.role=a.role||'member';delete S.user.role;S.form.liC='';toast('Welcome back, '+S.user.name.split(' ')[0])}
 function startPay(p){p.method=methods()[0];S.pending=p;open('pay')}
 
 /* ---------- scanning ---------- */
-function handleCode(text,who){const m=/^TNL:([MOTVC]):(.+)$/.exec(String(text).trim());
+function handleCode(text,who){const m=/^TNL:([MOTVCG]):(.+)$/.exec(String(text).trim());
   if(who==='member'){if(m&&m[1]==='C'){const c=S.charges.find(x=>x.id===m[2]);if(c&&c.status==='open')return A.payCharge(c.id);return toast(c?'That tab is already paid':'That code is not an open bar tab')}return toast('That is not a bar payment code')}
   const set=(ok,t,b)=>{S.lastScan={ok,t,b}};
   if(!m)return set(0,'Code not recognized','This is not a Tucson Night Life code. Ask the guest to open their pass in the app.');
@@ -628,13 +787,14 @@ function handleCode(text,who){const m=/^TNL:([MOTVC]):(.+)$/.exec(String(text).t
   if(m[1]==='M'){S.scanMember=true;return set(1,me()+' · member 00417',`${tier()} tier. Their details are below.`)}
   if(m[1]==='O'){const o=S.orders.find(x=>x.id===id);if(!o)return set(0,'Order not found','No paid order matches this code.');if(o.status!=='paid')return set(0,'Already picked up','Order '+o.id+' was handed over earlier. Do not serve it twice.');o.status='served';notify('deals','Order '+o.id+' picked up','Enjoy. Your points are already in your balance.');return set(1,'Paid · order '+o.id,o.lines.map(l=>l[0]).join(', ')+'. Hand it over.')}
   if(m[1]==='T'){const t=S.tickets[+id];if(!t)return set(0,'Ticket not found','No ticket matches this code.');if(t.used)return set(0,'Ticket already used','This ticket was scanned in earlier tonight.');t.used=true;S.points+=50;S.life+=50;S.scans.unshift({what:'Door check-in',amt:0,pts:50});return set(1,'Paid · admit '+t.qty,E(t.ev).name+(t.table?' with a table':'')+'. Guest earned 50 points.')}
+  if(m[1]==='G'){const g=S.giftsOut.concat(S.giftsIn).find(x=>x.id===id);if(!g)return set(0,'Drink not found','No paid drink matches this code.');if(g.status!=='paid')return set(0,'Already served','This drink was served earlier. Do not serve it twice.');g.status='served';if(g.to===me())notify('deals','Your drink from '+g.from+' is on the way','Say thanks in Messages.');return set(1,'Paid gift · for '+g.to,g.lines.map(l=>l[0]).join(', ')+' from '+g.from+'. Hand it over.')}
   if(m[1]==='V'){const v=S.vouchers[+id];if(!v)return set(0,'Reward not found','No reward matches this code.');if(v.used)return set(0,'Reward already used','This reward was honored earlier.');v.used=true;return set(1,'Reward · '+v.name,'Honor it at '+v.where+'.')}
   set(0,'Guest payment code','That code is for the guest to scan, not staff.')}
 function readImg(file,f){const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const scan=f.indexOf('scan')===0,mx=scan?1200:560,k=Math.min(1,mx/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.max(1,im.width*k|0);c.height=Math.max(1,im.height*k|0);
    const x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);
    if(scan){let r=null;try{r=jsQR(x.getImageData(0,0,c.width,c.height).data,c.width,c.height)}catch(e){}
      if(r&&r.data)handleCode(r.data,f==='scan-member'?'member':'staff');else if(typeof jsQR==='undefined')toast('The scanner did not load. Check your connection and reopen the app');else toast('No code found. Fill the frame with the code and try again')}
-   else if(f==='doc'){S.form.vfDoc=1}else{const url=c.toDataURL('image/jpeg',.72);if(f==='ev')S.form.evImg=url;else if(f==='item')S.form.itImg=url;else{const it=S.menu.find(m=>m.id===f);if(it)it.img=url}}
+   else if(f.indexOf('photo')===0){const W=480,H=600,cv=document.createElement('canvas');cv.width=W;cv.height=H;const k2=Math.max(W/im.width,H/im.height),w=im.width*k2,hh=im.height*k2;cv.getContext('2d').drawImage(im,(W-w)/2,(H-hh)/2,w,hh);S.photos[+f.slice(5)]=cv.toDataURL('image/jpeg',.8);S.photos=S.photos.filter(Boolean).slice(0,3);toast('Photo added to your profile')}else if(f==='doc'){S.form.vfDoc=1}else{const url=c.toDataURL('image/jpeg',.72);if(f==='ev')S.form.evImg=url;else if(f==='item')S.form.itImg=url;else{const it=S.menu.find(m=>m.id===f);if(it)it.img=url}}
    render()};im.onerror=()=>toast('That file is not a photo');im.src=fr.result};fr.readAsDataURL(file)}
 
 /* ---------- actions ---------- */
@@ -657,7 +817,25 @@ filter(v){S.filter=v},toggleMap(){S.mapOn=!S.mapOn},
 venue(v){open('venue',v)},venueByName(n){const v=VENUES.find(x=>x.name===n);if(v)open('venue',v.id)},
 event(v){S.bk={qty:2,table:false,splitTab:false};open('event',v)},ticket(v){open('ticket',+v)},voucher(v){open('voucher',+v)},report(v){open('report',v)},join(){open('join')},
 order(v){open('order',v)},charge(v){open('charge',v)},songSheet(){open('song')},
-profile(n){if(n===me()||n==='You'){if(S.role==='member'){S.tab.member='me';closeSheet()}else open('account');return}open('profile',n)},
+profile(n){if(n==='You')n=me();open('profile',n)},
+editMe(){S.role='member';S.tab.member='me';closeSheet();$('main').scrollTop=0},
+ph(v){const i=v.lastIndexOf('|'),n=v.slice(0,i),d=+v.slice(i+1),len=photos(n).length;PH[n]=Math.max(0,Math.min(len-1,(PH[n]||0)+d))},
+soc(v){S.soc=v;$('main').scrollTop=0},
+swipe(d){const n=deck()[0];if(!n)return;if(d==='L'){S.passes.push(n);return}likeP(n)},
+resetDeck(){S.likes=S.likes.filter(n=>S.matches.includes(n));S.passes=[]},
+profLike(n){likeP(n)},profPass(n){if(!S.passes.includes(n))S.passes.push(n);closeSheet();toast('Passed on '+n.split(' ')[0])},
+addFriend(n){if(!S.member)return open('join');if(S.friends.includes(n)){S.friends=S.friends.filter(x=>x!==n);return toast('Removed from friends')}if(S.freq.includes(n))return;S.freq.push(n);toast('Friend request sent');
+  setTimeout(()=>{S.freq=S.freq.filter(x=>x!==n);if(!S.friends.includes(n))S.friends.push(n);notify('friends',n+' accepted your friend request','You can message each other and send drinks.');render()},1500)},
+chat(n){if(!S.member)return open('join');S.chats[n]=S.chats[n]||[];open('chat',n);CF=true},
+send(n){const t=String(fv('chatIn','')).trim();if(!t)return;const c=(S.chats[n]=S.chats[n]||[]);c.push({from:'me',txt:t});S.form.chatIn='';CF=true;
+  const k=c.filter(x=>x.from==='them').length,gave=S.giftsOut.some(g=>g.to===n);
+  setTimeout(()=>{c.push({from:'them',txt:gave&&!c.some(x=>x.txt===REPLY[3])?REPLY[3]:REPLY[Math.min(k,2)]});if(sheetFn!=='chat'||sheetArg.v!==n)notify('friends','New message from '+n.split(' ')[0],c[c.length-1].txt);render()},1400)},
+gift(n){if(!S.member)return open('join');S.gcart={};S.form.gNote='';open('gift',n)},
+gadd(v){S.gcart[v]=(S.gcart[v]||0)+1},gclear(){S.gcart={}},giftCard(v){open('giftCard',v)},
+giftPay(n){const c=cartOf(S.gcart,0);if(!c.sub)return;startPay({kind:'gift',label:'Drink for '+n,lines:c.lines.concat([[taxLbl(),c.tax]]),sub:c.sub,tax:c.tax,total:c.total,ev:'ind',sales:c.sales,data:{to:n,lines:c.lines,note:String(fv('gNote','')).trim()}})},
+rmPhoto(i){S.photos.splice(+i,1)},alcT(v){const it=S.menu.find(m=>m.id===v);it.alc=!it.alc},
+block(n){if(!S.blocked.includes(n))S.blocked.push(n);S.matches=S.matches.filter(x=>x!==n);S.friends=S.friends.filter(x=>x!==n);closeSheet();toast(n.split(' ')[0]+' is blocked and can no longer see or message you')},
+report(n){toast('Thanks. Our team reviews every report within 24 hours')},
 follow(n){S.follow=S.follow.includes(n)?S.follow.filter(x=>x!==n):S.follow.concat(n)},
 goBar(){S.tab.member='bar';closeSheet();$('main').scrollTop=0},
 openNotifs(){$('push').classList.remove('show');open('notifs')},closeSheet(){closeSheet()},
@@ -688,11 +866,14 @@ mkCharge(){const c=cartOf(S.scart,+S.custom||0);if(!c.sub)return;const ch={id:'C
 cashSale(){const c=cartOf(S.scart,+S.custom||0);if(!c.sub)return;recordSales('ind',c.sales,c.tax);let msg=usd(c.total)+' cash sale recorded';if(S.scanMember){const p=earn(c.sub);S.scans.unshift({what:'Bar · cash',amt:c.sub,pts:p});msg+='. Member earned '+num(p)+' points'}S.scart={};S.custom=0;toast(msg)},
 payCharge(id){const c=S.charges.find(x=>x.id===id);if(!c||c.status!=='open')return;startPay({kind:'charge',label:'OVIA Lounge bar tab',lines:c.lines.concat([[taxLbl(),c.tax]]),sub:c.sub,tax:c.tax,total:c.total,ev:'ind',sales:c.sales,data:{id}})},
 method(v){S.pending.method=v},
-payNow(){const p=S.pending,ms=methods(),m=ms.includes(p.method)?p.method:ms[0];if(!m)return;const pts=p.sub?earn(p.sub):0;
+payNow(){const p=S.pending,ms=methods(),m=ms.includes(p.method)?p.method:ms[0];if(!m)return;const pts=p.sub?earn(p.sub*(p.kind==='gift'?2:1)):0;
   S.pays.unshift({what:p.label,total:p.total,method:m,pts});if(p.sales.length)recordSales(p.ev,p.sales,p.tax);S.pending=null;
   if(p.kind==='order'){const o={id:'A'+(100+S.seq++),lines:p.data.lines,total:p.total,status:'paid',table:p.data.table||''};S.orders.unshift(o);S.cart={};S.scans.unshift({what:(o.table?'Table order ':'Bar order ')+o.id,amt:p.sub,pts});notify('deals','Paid · order '+o.id,'+'+num(pts)+' points. '+(o.table?'Your server has it for table '+o.table+'.':'Show the bartender your code.'));open('order',o.id)}
   else if(p.kind==='charge'){const c=S.charges.find(x=>x.id===p.data.id);c.status='paid';S.scans.unshift({what:'Bar tab',amt:p.sub,pts});if(S.role==='member'){notify('deals','Paid · '+usd(p.total)+' at OVIA Lounge','+'+num(pts)+' points. The bartender can see it is paid.');closeSheet()}else open('charge',c.id)}
   else if(p.kind==='tip'){const r=S.djq.find(x=>x.id===p.data.id);r.tipSt='paid';closeSheet();toast('Tip paid to '+(r.playedBy||'the DJ')+'. You can post a new bounty')}
+  else if(p.kind==='gift'){const g={id:'G'+(100+S.seq++),from:me(),to:p.data.to,lines:p.data.lines,total:p.total,note:p.data.note,status:'paid'};S.giftsOut.unshift(g);S.gcart={};S.form.gNote='';S.scans.unshift({what:'Drink for '+g.to+' · 2x points',amt:p.sub,pts});
+    if(canMsg(g.to))(S.chats[g.to]=S.chats[g.to]||[]).push({from:'me',gift:1,txt:'Sent you '+g.lines.map(l=>l[0]).join(', ')+(g.note?': '+g.note:'')});
+    notify('deals','You bought '+g.to.split(' ')[0]+' a drink','+'+num(pts)+' points, double. It is in their app with a QR code for their server.');open('giftCard',g.id)}
   else if(p.kind==='ticket'){S.tickets.push({ev:p.ev,qty:p.data.qty,table:p.data.table,total:p.total,code:p.data.code});if(!S.going.includes(p.ev))S.going.push(p.ev);notify('events','You are confirmed for '+E(p.ev).name,'+'+num(pts)+' points. Your QR ticket is under Me.');open('ticket',S.tickets.length-1)}
   else{S.member=true;closeSheet();if(S.role==='member')S.tab.member='social';notify('deals','Welcome to the circle','Double points are on. The members feed is unlocked.')}},
 demoScan(v){handleCode(v,'staff');$('main').scrollTop=0},
@@ -708,7 +889,7 @@ testPush(){const c=Object.keys(NCATS).find(c=>!S.mute[c]);if(!c)return toast('Al
 reset(){try{localStorage.removeItem('tnl-v4')}catch(e){}const u=S.user,r=S.role;S=JSON.parse(JSON.stringify(DEF));S.user=u;S.role=r;closeSheet();toast('Demo reset')},
 checkGuest(v){v=+v;S.inGuests=S.inGuests.includes(v)?S.inGuests.filter(x=>x!==v):S.inGuests.concat(v)},
 editMenu(){S.editMenu=!S.editMenu},delItem(v){S.menu=S.menu.filter(m=>m.id!==v);delete S.cart[v];delete S.scart[v]},
-addItem(){const n=String(fv('niName','')).trim(),p=parseFloat(fv('niPrice',''));if(!n||!(p>=0))return toast('Add a name and a price');const cat=fv('niCat','bar');S.menu.push({id:'x'+(S.seq++),name:n,price:p,cat,g:cat==='hookah'?'hookah':cat==='tables'?'bottle':'glass',img:S.form.itImg||''});S.form.niName=S.form.niPrice='';S.form.itImg='';toast(n+' is on the menu')},
+addItem(){const n=String(fv('niName','')).trim(),p=parseFloat(fv('niPrice',''));if(!n||!(p>=0))return toast('Add a name and a price');const cat=fv('niCat','bar');S.menu.push({id:'x'+(S.seq++),alc:cat==='bar',name:n,price:p,cat,g:cat==='hookah'?'hookah':cat==='tables'?'bottle':'glass',img:S.form.itImg||''});S.form.niName=S.form.niPrice='';S.form.itImg='';toast(n+' is on the menu')},
 payToggle(k){S.payc[k].on=!S.payc[k].on;if(S.payc[k].on&&!S.payc[k].id&&k!=='stripe')toast('Add your '+PAYN[k]+' handle so guests know who they are paying')},
 postEvent(by){const n=String(fv('evName','')).trim(),d=String(fv('evDate','')),t1=String(fv('evStart','22:00')),t2=String(fv('evEnd','02:00'));if(!n)return toast('Add the event name');if(!d)return toast('Pick the date on the calendar');if(d<iso(new Date()))return toast('That date has already passed');if(!t1||!t2)return toast('Set the start and end time');const w=fmtD(d)+' · '+fmtT(t1)+' to '+fmtT(t2);
   S.events.unshift({id:'c'+(S.seq++),name:n,venue:'ovia',when:w,status:'upcoming',age:fv('evAge','21+'),door:Math.max(0,parseFloat(fv('evDoor','10'))||0),promoter:by==='owner'?'OVIA Lounge':'K. Dot',img:S.form.evImg||'',heads:0,rsvp:0,capE:Math.max(1,parseInt(fv('evCap','120'))||120),base:{door:0,bar:0,tables:0,hookah:0},note:String(fv('evNote','')).trim()});
@@ -752,13 +933,14 @@ function render(){const m=$('main'),y=m.scrollTop,inn=!!S.user;
   $('pts').textContent=num(S.points)+' pts';$('pts').style.display=S.role==='member'?'':'none';
   $('acct').textContent=ROLE_L[S.role];
   const u=S.notifs.filter(n=>n.unread).length;$('bell').innerHTML=ic('bell')+(u?`<i>${u}</i>`:'');$('bell').style.display=S.role==='member'?'':'none';
-  m.innerHTML=gate?verifyScreen(S.role):(SC[S.role][tab]||SC[S.role][NAV[S.role][0][0]])();m.scrollTop=y;
+  if(S.member&&!S.giftSeed){S.giftSeed=1;const u=ageBand()!=='21+';S.giftsIn.push({id:'G1',from:'Maya R.',to:me(),lines:[[u?'1 × Virgin mojito':'1 × House margarita',u?8:12]],total:u?8.7:13.04,note:'Welcome to the circle!',status:'paid'})}
+  m.innerHTML=gate?verifyScreen(S.role):(SC[S.role][tab]||SC[S.role][NAV[S.role][0][0]])();m.scrollTop=y;bindSwipe();
   const tq=S.orders.filter(o=>o.table&&o.status!=='served').length;
   $('nav').innerHTML=gate?'':NAV[S.role].map(n=>`<button class="${tab===n[0]?'on':''} ${n[3]?'ctr':''}" data-a="tab" data-v="${n[0]}">${n[3]?`<span class="orb">${ic(n[2])}</span>`:ic(n[2])}<span>${n[1]}${n[0]==='orders'&&tq?' ('+tq+')':''}</span></button>`).join('');
   drawSheet();save()}
 document.addEventListener('click',e=>{if(e.target.closest('input,select,textarea,label.btn,a'))return;const el=e.target.closest('[data-a]');if(!el){if(e.target.id==='sheet')closeSheet();return}
   if(el.disabled)return;A[el.dataset.a](el.dataset.v,el);render()});
-document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('span[data-a],div[data-a]')){e.preventDefault();e.target.click()}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='chatIn'){e.preventDefault();A.send(sheetArg.v);render();return}if((e.key==='Enter'||e.key===' ')&&e.target.matches('span[data-a],div[data-a]')){e.preventDefault();e.target.click()}});
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset.m)S.form[el.dataset.m]=el.value;
   if(el.dataset.i==='cap'){S.crowd.ovia=+el.value;$('capLbl').textContent=el.value+'% · '+Math.round(el.value*3)+' of 300'}
   if(el.dataset.i==='split'){S.split[el.dataset.k]=+el.value;Object.assign(S.split,{by:'owner',sent:false,agreed:false});$('lb-'+el.dataset.k).textContent=el.value+'%';$('splitPrev').innerHTML=splitPrev()}
