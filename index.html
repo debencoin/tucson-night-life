@@ -299,9 +299,13 @@ function face(n,v){v=v||0;const key=n+'|'+v;if(FACE[key])return FACE[key];
 const BLANK='data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 125"><rect width="100" height="125" fill="#241a2e"/><circle cx="50" cy="50" r="19" fill="#4a3a5c"/><path d="M14 125C16 96 32 84 50 84S84 96 86 125Z" fill="#4a3a5c"/></svg>');
 function photos(n){if(n===me()||n==='You'){const ph=S.photos.filter(Boolean);return ph.length?ph:[BLANK]}return PEOPLE[n]?(PEOPLE[n].img?['assets/people/'+PEOPLE[n].img]:[0,1,2].map(v=>face(n,v))):[face(n,0)]}
 const pic=(n,v)=>`<img src="${photos(n)[v||0]}" alt="">`;
-const here=id=>Object.keys(PEOPLE).filter(n=>PEOPLE[n].at===id&&!S.blocked.includes(n)).concat(S.user&&S.checkins.includes(id)?[me()]:[]);
-const canMsg=n=>!S.blocked.includes(n);
-const deck=()=>Object.keys(PEOPLE).filter(n=>!S.likes.includes(n)&&!S.passes.includes(n)&&!S.blocked.includes(n));
+const here=id=>Object.keys(PEOPLE).filter(n=>PEOPLE[n].at===id&&!hidden(n)).concat(S.user&&S.checkins.includes(id)?[me()]:[]);
+const hidden=n=>S.blocked.includes(n)||S.removed.includes('p:'+n);
+const vLive=v=>!S.vRemoved.includes(v.id);
+const ADMIN_H=3402473555,isAdmin=c=>hsh(String(c||'').trim().toLowerCase())===ADMIN_H;
+const STAFFS=[{n:'Rosa M.',r:'staff',d:'Server · OVIA Lounge'},{n:'Carla S.',r:'staff',d:'Bartender · OVIA Lounge'},{n:'Devon W.',r:'staff',d:'Host · OVIA Lounge'},{n:'DJ Nova',r:'dj',d:'DJ · OVIA Lounge'},{n:'Big Mike',r:'sec',d:'Security · OVIA Lounge'}];
+const canMsg=n=>!hidden(n);
+const deck=()=>Object.keys(PEOPLE).filter(n=>!S.likes.includes(n)&&!S.passes.includes(n)&&!hidden(n));
 const BADGES=[
  {id:'first',n:'First Night',d:'Check in or get scanned once',g:'star',c:['#ff8a3d','#ff2d7a']},
  {id:'owl',n:'Night Owl',d:'Reach 1,000 lifetime points',g:'moon',c:['#7b6cff','#2b1a6b']},
@@ -333,16 +337,16 @@ function likeP(n){if(!S.likes.includes(n))S.likes.push(n);S.passes=S.passes.filt
  else toast('Liked '+n.split(' ')[0]+'. If they like you back, you match')}
 function giftsInCard(){const g=S.giftsIn.filter(x=>x.status==='paid');return g.length?`<div class="card vip"><h2>Drinks bought for you</h2>${g.map(x=>`<button class="row" data-a="giftCard" data-v="${x.id}" style="width:100%;text-align:left">${av(x.from)}<span class="grow"><b>${esc(x.lines.map(l=>l[0]).join(', '))}</b><div class="small dim">From ${esc(x.from)}${x.note?' · '+esc(x.note):''}</div></span><span class="tag ok">Show QR</span></button>`).join('')}</div>`:''}
 function giftsOutCard(){const g=S.giftsOut;return g.length?`<div class="card"><h2>Drinks you bought</h2>${g.map(x=>`<button class="row" data-a="giftCard" data-v="${x.id}" style="width:100%;text-align:left">${av(x.to)}<span class="grow"><b>${esc(x.lines.map(l=>l[0]).join(', '))}</b><div class="small dim">For ${esc(x.to)} · ${usd(x.total)}</div></span><span class="tag ${x.status==='paid'?'gold':''}">${x.status==='paid'?'Waiting':'Served'}</span></button>`).join('')}</div>`:''}
-const threads=()=>[...new Set(S.matches.concat(Object.keys(S.chats).filter(n=>(S.chats[n]||[]).length)))].filter(n=>canMsg(n)&&!S.blocked.includes(n));
+const threads=()=>[...new Set(S.matches.concat(Object.keys(S.chats).filter(n=>(S.chats[n]||[]).length)))].filter(n=>canMsg(n)&&!hidden(n));
 function swipeView(){const d=deck();if(!d.length)return `<div class="card"><h2>You have seen everyone out tonight</h2><div class="small dim">More members show up as they check in.</div><button class="btn ghost sm" data-a="resetDeck">Start over</button></div>`;
  const n=d[0],nx=d[1];return `<div class="deck">${nx?tcard(nx,'next'):''}${tcard(n,'',true)}</div>
  <div class="rbs"><button class="rb pass" data-a="swipe" data-v="L" aria-label="Pass on ${esc(n)}">${ic('x')}</button><button class="rb sm drink" data-a="gift" data-v="${esc(n)}" aria-label="Buy ${esc(n)} a drink">${ic('glass')}</button><button class="rb sm msg" data-a="chat" data-v="${esc(n)}" aria-label="Message ${esc(n)}">${ic('chat')}</button><button class="rb sm info" data-a="profile" data-v="${esc(n)}" aria-label="Open ${esc(n)}'s profile">${ic('user')}</button><button class="rb like" data-a="swipe" data-v="R" aria-label="Like ${esc(n)}">${ic('heart')}</button></div>
  <div class="small dim" style="text-align:center">Swipe right to like, left to pass. Tap the photo for more. Message or buy a drink anytime.</div>`}
-function matchesView(){const m=S.matches.filter(n=>!S.blocked.includes(n)),lk=Object.keys(PEOPLE).filter(n=>PEOPLE[n].likesYou&&!S.likes.includes(n)&&!S.passes.includes(n)&&!S.blocked.includes(n)).length,t=threads();
+function matchesView(){const m=S.matches.filter(n=>!hidden(n)),lk=Object.keys(PEOPLE).filter(n=>PEOPLE[n].likesYou&&!S.likes.includes(n)&&!S.passes.includes(n)&&!hidden(n)).length,t=threads();
  return `${lk?`<div class="card vip"><b>${lk} ${lk>1?'people like':'person likes'} you</b><div class="small dim">Keep swiping to find out who.</div><button class="btn goldb sm" data-a="soc" data-v="swipe">Keep swiping</button></div>`:''}
  ${m.length?`<div class="card"><h2>Matches</h2><div class="row wrap" style="gap:14px">${m.map(n=>`<div class="col g6" style="align-items:center;width:62px">${av(n,'lg')}<span class="small">${esc(n.split(' ')[0])}</span></div>`).join('')}</div></div>`:''}
  <div class="card"><h2>Messages</h2>${t.length?t.map(n=>{const c=S.chats[n]||[],l=c[c.length-1];return `<button class="row" data-a="chat" data-v="${esc(n)}" style="width:100%;text-align:left">${av(n)}<span class="grow"><b>${esc(n)}</b><div class="small dim">${l?esc((l.from==='me'?'You: ':'')+l.txt):'Say hi'}</div></span><span class="tag ${S.matches.includes(n)?'gold':''}">${S.matches.includes(n)?'Match':'Friend'}</span></button>`}).join(''):'<div class="small dim">No conversations yet. Message anyone from their profile or the Swipe deck.</div>'}</div>`}
-function friendsView(){const f=S.friends.filter(n=>!S.blocked.includes(n));
+function friendsView(){const f=S.friends.filter(n=>!hidden(n));
  return `<div class="card"><h2>Your friends</h2>${f.length?f.map(n=>`<div class="row">${av(n)}<span class="grow"><b>${esc(n)}</b><div class="small dim">${PEOPLE[n]&&PEOPLE[n].at?'At '+V(PEOPLE[n].at).name+' now':'Not out right now'}</div></span><button class="rb sm info" data-a="chat" data-v="${esc(n)}" aria-label="Message ${esc(n)}">${ic('chat')}</button><button class="rb sm drink" data-a="gift" data-v="${esc(n)}" aria-label="Buy ${esc(n)} a drink">${ic('glass')}</button></div>`).join(''):'<div class="small dim">No friends yet. Open someone\'s profile and tap Add friend.</div>'}${S.freq.length?`<div class="small dim">Waiting on: ${S.freq.map(esc).join(', ')}</div>`:''}</div>
  ${giftsInCard()}${giftsOutCard()}`}
 function bindSwipe(){const c=$('swipeCard');if(!c)return;let sx=0,dx=0,down=false;const lk=c.querySelector('.st-like'),np=c.querySelector('.st-nope');
@@ -362,9 +366,9 @@ const PROMOS=[{n:'K. Dot',fol:1284},
 const CATS={door:'Door',bar:'Bar',tables:'Tables',hookah:'Hookah'};
 const NCATS={live:'Live venue updates',friends:'Friends going out',deals:'Deals and points',events:'Event reminders',blasts:'Promoter and venue blasts'};
 const PAYN={stripe:'Card, Apple Pay or Google Pay (Stripe)',cashapp:'Cash App',venmo:'Venmo',zelle:'Zelle'};
-const ROLE_L={member:'Member',promoter:'Promoter',owner:'Venue owner',staff:'Staff',dj:'DJ',sec:'Security'};
+const ROLE_L={admin:'Admin',member:'Member',promoter:'Promoter',owner:'Venue owner',staff:'Staff',dj:'DJ',sec:'Security'};
 const GUESTS=['Maya R.','Dre T.','Lexi P.','Tino G.','Jas W.','Kayla M.'];
-const DEF={photos:[],bio:'',fav:'',likes:[],passes:[],matches:[],chats:{},friends:[],freq:[],blocked:[],giftsOut:[],giftsIn:[],gcart:{},soc:'swipe',menuV:2,user:null,accounts:[],ob:{step:0,via:''},memberPrice:40,tblOn:false,role:'member',tab:{member:'tonight',promoter:'studio',owner:'live',staff:'scan',dj:'booth',sec:'door'},djTipsOn:true,djTipMin:2,member:false,points:1240,life:1840,streak:3,filter:'All',mapOn:false,
+const DEF={removed:[],vRemoved:[],newVenues:[],adQ:'',adF:'all',apps:[{id:'ap1',role:'owner',name:'Rodney P.',contact:'Sample applicant',biz:'Desert Rose Lounge',addr:'Sample address, Tucson',doc:true,st:'pending'},{id:'ap2',role:'promoter',name:'Kendra L.',contact:'Sample applicant',biz:'Kendra Nights',addr:'@kendranights',venue:'OVIA Lounge',st:'pending'},{id:'ap3',role:'owner',name:'Luis G.',contact:'Sample applicant',biz:'Barrio Vinyl Bar',addr:'Sample address, Tucson',doc:false,st:'pending'}],photos:[],bio:'',fav:'',likes:[],passes:[],matches:[],chats:{},friends:[],freq:[],blocked:[],giftsOut:[],giftsIn:[],gcart:{},soc:'swipe',menuV:2,user:null,accounts:[],ob:{step:0,via:''},memberPrice:40,tblOn:false,role:'member',tab:{member:'tonight',promoter:'studio',owner:'live',staff:'scan',dj:'booth',sec:'door',admin:'overview'},djTipsOn:true,djTipMin:2,member:false,points:1240,life:1840,streak:3,filter:'All',mapOn:false,
  crowd:{ovia:52,saguaro:78,copper:35,monsoon:64,barrio:41,maingate:88},wait:{ovia:5,saguaro:15,copper:0,monsoon:5,barrio:0,maingate:25},
  liveMsg:'Industry Monday: half-off hookah until midnight.',checkins:[],favs:[],follow:[],going:['duel'],sales:[],scans:[],tickets:[],vouchers:[],
  inGuests:[0,1,3],mute:{},share:false,form:{},bk:{qty:2,table:false,splitTab:false},
@@ -387,7 +391,7 @@ const DEF={photos:[],bio:'',fav:'',likes:[],passes:[],matches:[],chats:{},friend
   {c:'friends',t:'3 friends are at OVIA Lounge',b:'Maya, Dre and Lexi checked in.',time:'9:30 PM',unread:1},
   {c:'events',t:'Duel in the Desert is in 19 days',b:'You are on the guest list. Tables are 50% reserved.',time:'6:00 PM',unread:0}]
 };
-let S=load(), sheetFn=null, sheetArg=null, toastT, pushT;
+let S=load();S.newVenues.forEach(v=>{if(!VENUES.some(x=>x.id===v.id))VENUES.push(v)});let sheetFn=null, sheetArg=null, toastT, pushT;
 function load(){let s={};try{s=JSON.parse(localStorage.getItem('tnl-v4')||'{}')}catch(e){}
   const hot=window.claude&&window.claude.hot&&window.claude.hot.data; if(hot&&hot.tab)s=hot;
   const d=JSON.parse(JSON.stringify(DEF)),r=Object.assign(d,s,{tab:Object.assign(d.tab,s.tab||{}),split:Object.assign(d.split,s.split||{}),pout:Object.assign(d.pout,s.pout||{})});
@@ -470,7 +474,7 @@ function verifyScreen(r){const own=r==='owner',st=(S.user.ver||{})[r]||'none',ap
   if(st==='pending')return `<div class="col g6"><span class="eyebrow">Verification</span><h1>We are <em>checking</em> your details</h1></div>
    <div class="card"><span class="tag warn" style="align-self:flex-start">Pending review</span><div>Tucson Night Life reviews every ${own?'venue owner':'promoter'} before the ${own?'owner':'promoter'} dashboard opens. You get an alert the moment you are approved.</div>
    <div><div class="kv"><span>${own?'Venue':'Promoter name'}</span><b>${esc(ap.name)}</b></div><div class="kv"><span>${own?'Address':'Instagram or site'}</span><b>${esc(ap.addr||'Not given')}</b></div><div class="kv"><span>${own?'License photo':'Venue you work with'}</span><b>${own?(ap.doc?'Attached':'Not attached'):esc(ap.venue||'Not given')}</b></div></div></div>
-   <button class="btn goldb full" data-a="verifyDemo" data-v="${r}">Demo: approve me now</button><button class="btn ghost full" data-a="role" data-v="member">Use the member side while I wait</button>`;
+   <div class="note">An admin approves you from the Tucson Night Life admin dashboard. Log back in after you are approved.</div><button class="btn ghost full" data-a="role" data-v="member">Use the member side while I wait</button>`;
   return `<div class="col g6"><span class="eyebrow">Verification</span><h1>${own?'Verify your <em>venue</em>':'Get verified as a <em>promoter</em>'}</h1></div>
    <div class="card"><div class="small dim">${own?'Owners handle money and menus, so we confirm you run the venue before your dashboard opens.':'Promoters earn a cut of sales, so we confirm who you are and who you work with before your dashboard opens.'}</div>
    <label class="f" for="vfName">${own?'Venue name':'Promoter or brand name'}<input id="vfName" type="text" data-m="vfName" value="${esc(fv('vfName',''))}" placeholder="${own?'OVIA Lounge':'K. Dot Presents'}"></label>
@@ -491,7 +495,7 @@ function mapView(list){return `<div class="map"><svg viewBox="0 0 100 78" aria-l
   <div class="note">Pins show how full each room is right now. Map is simplified and not to scale.</div>`}
 const M={
 tonight(){const fl=['All','Live now','No cover','Hookah','Hip-hop','Latin','Rooftop'];
-  const list=VENUES.filter(v=>S.filter==='All'||(S.filter==='Live now'?v.id==='ovia':v.tags.includes(S.filter)));
+  const list=VENUES.filter(vLive).filter(v=>S.filter==='All'||(S.filter==='Live now'?v.id==='ovia':v.tags.includes(S.filter)));
   return `<div class="col g6"><span class="eyebrow">Monday in the Old Pueblo</span><h1>Where is it <em>going off</em> tonight?</h1></div>
   <div class="chips">${fl.map(f=>`<button class="chip ${S.filter===f?'on':''}" data-a="filter" data-v="${f}">${f}</button>`).join('')}</div>
   <div class="row between"><h2>Rooms right now</h2><button class="btn ghost sm" data-a="toggleMap">${S.mapOn?'Show list':'Show map'}</button></div>
@@ -505,7 +509,7 @@ social(){const feed=S.posts.map((p,i)=>`<div class="card"><div class="row">${av(
   if(!S.member)return head+`<div class="lock"><div class="col blur" aria-hidden="true">${feed}</div><div class="veil"><div class="card vip" style="width:100%"><h3>Join to see who is out tonight</h3><div class="small dim">Swiping, matches, messages, who is out, the feed and the leaderboard are for paying members.</div><button class="btn goldb full" data-a="join">See membership · ${usd(S.memberPrice)} a month</button></div></div></div>`;
   const segs=`<div class="chips">${[['swipe','Swipe'],['matches','Matches'+(S.matches.length?' · '+S.matches.length:'')],['friends','Friends'],['feed','Feed']].map(x=>`<button class="chip ${S.soc===x[0]?'on':''}" data-a="soc" data-v="${x[0]}">${x[1]}</button>`).join('')}</div>`;
   if(S.soc==='swipe')return head+segs+swipeView();if(S.soc==='matches')return head+segs+matchesView();if(S.soc==='friends')return head+segs+friendsView();
-  return head+segs+`<div class="card"><div class="row between"><h2>Out right now</h2><span class="tag ok">${Object.values(PEOPLE).filter(x=>x.at).length} members out</span></div>${VENUES.filter(v=>here(v.id).length).map(v=>`<div class="row"><div class="avs">${here(v.id).slice(0,5).map(f=>av(f)).join('')}</div><button class="small" data-a="venue" data-v="${v.id}">${v.name} · ${here(v.id).length}</button></div>`).join('')}<div class="small dim">Tap a face to open their profile.</div></div>
+  return head+segs+`<div class="card"><div class="row between"><h2>Out right now</h2><span class="tag ok">${Object.values(PEOPLE).filter(x=>x.at).length} members out</span></div>${VENUES.filter(vLive).filter(v=>here(v.id).length).map(v=>`<div class="row"><div class="avs">${here(v.id).slice(0,5).map(f=>av(f)).join('')}</div><button class="small" data-a="venue" data-v="${v.id}">${v.name} · ${here(v.id).length}</button></div>`).join('')}<div class="small dim">Tap a face to open their profile.</div></div>
   <div class="card"><label class="f" for="postTxt">Post to your circle</label><textarea id="postTxt" data-m="postTxt" placeholder="Where are you headed tonight?">${esc(fv('postTxt',''))}</textarea><div class="row"><select id="postAt" data-m="postAt" aria-label="Tag a venue">${VENUES.map(v=>`<option ${fv('postAt','')===v.name?'selected':''}>${v.name}</option>`).join('')}</select><button class="btn sm" data-a="post">Post</button></div></div>
   ${feed}<div class="card"><h2>November leaderboard</h2><div>${board}</div><div class="small dim">Top 3 each month win a free VIP table.</div></div>`},
 scan(){const open=S.charges.filter(c=>c.status==='open');return `<div class="col g6"><span class="eyebrow">Scan</span><h1>Get scanned, <em>get points</em></h1></div>
@@ -743,7 +747,8 @@ song(){const tip=+S.form.sgTip||0,on=S.djTipsOn,due=myDue();return `<span class=
    <label class="f" for="sgTip">Or type an amount $<input id="sgTip" type="number" inputmode="decimal" min="0" data-m="sgTip" data-r="1" value="${tip||''}" placeholder="${S.djTipMin} minimum"></label>
    <div class="small dim">You pay nothing now. You only owe the tip once the DJ confirms they played your song. Bigger bounties sit higher on the DJ's list.</div></div>`}
   <button class="btn full" data-a="sendSong">${tip>0&&on&&!due?'Post '+usd(tip)+' bounty and send':'Send to the DJ · 100 points'}</button><div class="small dim">${tip>0&&on&&!due?'No points needed with a bounty.':'You have '+num(S.points)+' points.'} You get an alert when the DJ plays it.</div>`},
-profile(n){const self=n===me(),p=PEOPLE[n];if(!p&&!self)return `<div class="row">${av(n,'lg')}<h1 style="font-size:21px">${esc(n)}</h1></div><div class="small dim">This guest has not set up a public profile yet.</div>`;
+profile(n){const self=n===me(),p=PEOPLE[n];if(S.removed.includes('p:'+n))return `<h1 style="font-size:21px">${esc(n)}</h1><div class="small dim">This account was removed by Tucson Night Life.</div>`;
+  if(!p&&!self)return `<div class="row">${av(n,'lg')}<h1 style="font-size:21px">${esc(n)}</h1></div><div class="small dim">This guest has not set up a public profile yet.</div>`;
   if(self)return `${tcard(n)}<div class="card"><h2>Edit your profile</h2>${profileForm('sh')}<button class="btn ghost sm" data-a="editMe">Change my photos</button></div><div class="card"><h2>Your badges</h2>${badgeGrid(true)}</div>`;
   const posts=S.posts.filter(x=>x.who===n),liked=S.likes.includes(n),mt=S.matches.includes(n),fr=S.friends.includes(n),rq=S.freq.includes(n),first=esc(n.split(' ')[0]);
   return `${tcard(n)}
@@ -774,8 +779,10 @@ giftCard(id){const g=S.giftsOut.concat(S.giftsIn).find(x=>x.id===id),mine=g.to==
   <div class="small">At ${V(g.venue||'ovia').name}</div>
   <div>${g.lines.map(l=>`<div class="row between small"><span>${esc(l[0])}</span><span>${usd(l[1])}</span></div>`).join('')}</div>${qr('TNL:G:'+g.id)}<div class="small" style="text-align:center">${done?'This drink has been served.':'Show your server or bartender. They scan it once and bring the drink. It is already paid.'}</div></div>
   ${mine&&!fromMe?`<div class="row"><button class="btn sm grow ${fr||rq?'ghost':''}" data-a="addFriend" data-v="${esc(g.from)}">${fr?'Friends':rq?'Request sent':'Add '+first+' as a friend'}</button><button class="btn sm grow" data-a="chat" data-v="${esc(g.from)}">${ic('chat')} Message ${first}</button></div><div class="small dim" style="text-align:center">Tap ${first}'s photo to see their profile.</div>`:''}`},
+confirmDel(k){const u=adUsers().find(x=>x.k===k);return `<h1 style="font-size:21px">Delete ${esc(u.n)}?</h1><div class="small dim">${esc(ROLE_L[u.r]||u.r)} · ${esc(u.d)}</div><div>They lose access to the app and disappear from venues, swiping, messages and lists. You can restore them under Users, Deleted.</div>
+  <button class="btn full" style="background:var(--crit)" data-a="adDelYes" data-v="${esc(k)}">Delete ${esc(u.n)}</button><button class="btn ghost full" data-a="closeSheet">Cancel</button>`},
 promos(){return `<span class="eyebrow">Promoters in the app</span><h1 style="font-size:21px">Pick a <em>promoter</em></h1>
-  ${PROMOS.map(x=>{const p=promo(x.n);return `<button class="card ${S.split.promoter===p.n?'vip':''}" data-a="promoOpen" data-v="${esc(p.n)}"><div class="row"><span class="av" style="--h:${hue(p.n)}">${esc(p.n.split(' ').map(w=>w[0]).join('').slice(0,2))}</span><div class="grow"><b>${esc(p.n)}</b><div class="small dim">${num(p.fol)} followers · ${KIND[p.kind].toLowerCase()}</div></div>${S.split.promoter===p.n?'<span class="tag gold">Current</span>':'<span class="tag ok">Verified</span>'}</div><div class="small">${sched(p)}</div><div class="small dim">Asks: door ${p.door}% · bar ${p.bar}% · tables ${p.tables}% · hookah ${p.hookah}%</div></button>`}).join('')}
+  ${PROMOS.filter(x=>!S.removed.includes('pr:'+x.n)).map(x=>{const p=promo(x.n);return `<button class="card ${S.split.promoter===p.n?'vip':''}" data-a="promoOpen" data-v="${esc(p.n)}"><div class="row"><span class="av" style="--h:${hue(p.n)}">${esc(p.n.split(' ').map(w=>w[0]).join('').slice(0,2))}</span><div class="grow"><b>${esc(p.n)}</b><div class="small dim">${num(p.fol)} followers · ${KIND[p.kind].toLowerCase()}</div></div>${S.split.promoter===p.n?'<span class="tag gold">Current</span>':'<span class="tag ok">Verified</span>'}</div><div class="small">${sched(p)}</div><div class="small dim">Asks: door ${p.door}% · bar ${p.bar}% · tables ${p.tables}% · hookah ${p.hookah}%</div></button>`}).join('')}
   <div class="note">Only K. Dot is a live account in this prototype. The other three are sample promoters.</div>`},
 promo(n){const p=promo(n),cur=S.split.promoter===p.n;return `<div class="row"><span class="av lg" style="--h:${hue(p.n)}">${esc(p.n.split(' ').map(w=>w[0]).join('').slice(0,2))}</span><div class="col g6"><h1 style="font-size:21px">${esc(p.n)}</h1><div class="row wrap"><span class="tag ok">Verified promoter</span><span class="tag">${num(p.fol)} followers</span></div></div></div>
   <div>${esc(p.bio)}</div>
@@ -783,7 +790,7 @@ promo(n){const p=promo(n),cur=S.split.promoter===p.n;return `<div class="row"><s
   <div class="card"><h2>Their asking terms</h2><div><div class="kv"><span>Door</span><b>${p.door}%</b></div><div class="kv"><span>Bar</span><b>${p.bar}%</b></div><div class="kv"><span>Tables</span><b>${p.tables}%</b></div><div class="kv"><span>Hookah and food</span><b>${p.hookah}%</b></div></div></div>
   <button class="btn goldb full" data-a="promoPick" data-v="${esc(p.n)}">${cur?'Start a new proposal with '+esc(p.n):'Draft a proposal for '+esc(p.n)}</button><div class="small dim">This fills the proposal with their asking terms and nights. You adjust it under Money, then send it. ${cur?'':'It replaces your current deal with '+esc(S.split.promoter)+'.'}</div><button class="btn ghost sm" data-a="promos">Back to all promoters</button>`},
 account(){const u=S.user;return `<div class="row">${av(me(),'lg')}<div><h1 style="font-size:21px">${esc(me())}</h1><div class="small dim">Signed in with ${esc(u.via)}${u.contact?' · '+esc(u.contact):''}</div>${ageTag()}</div></div>
-  <h2>Dashboards</h2>${Object.keys(ROLE_L).map(r=>`<button class="card ${S.role===r?'vip':''}" data-a="role" data-v="${r}" style="padding:12px"><div class="row between"><b>${ROLE_L[r]}${r==='staff'?' · host, bartender, server':''}</b><span class="tag ${S.role===r?'gold':''}">${S.role===r?'Current':(r==='promoter'||r==='owner')&&(u.ver||{})[r]!=='ok'?'Needs verification':'Open'}</span></div></button>`).join('')}
+  <h2>Dashboards</h2>${Object.keys(ROLE_L).filter(r=>r!=='admin'||u.admin).map(r=>`<button class="card ${S.role===r?'vip':''}" data-a="role" data-v="${r}" style="padding:12px"><div class="row between"><b>${ROLE_L[r]}${r==='staff'?' · host, bartender, server':''}</b><span class="tag ${S.role===r?'gold':''}">${S.role===r?'Current':(r==='promoter'||r==='owner')&&!u.admin&&(u.ver||{})[r]!=='ok'?'Needs verification':'Open'}</span></div></button>`).join('')}
   <div class="note">In the live app each account only opens its own dashboard. Switching here is for trying the prototype.</div>
   <div class="row"><button class="btn ghost sm grow" data-a="signOut">Sign out</button><button class="btn ghost sm grow" data-a="reset">Reset the demo</button></div>`},
 notifs(){return `<div class="row between"><h1 style="font-size:21px">Alerts</h1><button class="btn ghost sm" data-a="readAll">Mark all read</button></div>
@@ -799,7 +806,7 @@ function bookQuote(e){const b=S.bk,door=b.qty*e.door,code=String(fv('promo','KDO
 function open(fn,arg){sheetFn=fn;sheetArg={v:arg};drawSheet();$('sheet').classList.add('open');$('pane').scrollTop=0}
 function drawSheet(){if(!sheetFn)return;const y=$('pane').scrollTop;$('pane').innerHTML=`<button class="close" data-a="closeSheet" aria-label="Close">×</button>`+SH[sheetFn](sheetArg.v);$('pane').scrollTop=y;if(sheetFn==='chat'){$('pane').scrollTop=1e6;if(CF&&$('chatIn')){$('chatIn').focus();CF=false}}}
 function closeSheet(){sheetFn=null;$('sheet').classList.remove('open')}
-function logIn(a){S.user=JSON.parse(JSON.stringify(a));S.user.ver=S.user.ver||{};S.role=a.role||'member';delete S.user.role;S.form.liC='';toast('Welcome back, '+S.user.name.split(' ')[0])}
+function logIn(a){if(S.removed.includes('a:'+a.contact.toLowerCase()))return toast('This account was removed. Contact Tucson Night Life');S.user=JSON.parse(JSON.stringify(a));S.user.ver=S.user.ver||{};S.user.admin=isAdmin(a.contact);S.role=S.user.admin?'admin':a.role||'member';delete S.user.role;S.form.liC='';toast('Welcome back, '+S.user.name.split(' ')[0])}
 function startPay(p){p.method=methods()[0];S.pending=p;open('pay')}
 
 /* ---------- scanning ---------- */
@@ -828,7 +835,7 @@ via(v){S.ob={step:2,via:v}},obBack(){S.ob.step=Math.max(0,S.ob.step-1)},toSignup
 login(){const c=String(fv('liC','')).trim().toLowerCase();if(!c)return toast('Type your email or mobile number');const a=S.accounts.find(x=>x.contact.toLowerCase()===c);if(!a)return toast('No account for that yet. Create one below');logIn(a)},
 loginGoogle(){const a=S.accounts.find(x=>x.via==='Google');if(a)return logIn(a);S.ob={step:2,via:'Google'};toast('No Google account here yet. Create one now')},
 obNext(){if(!String(fv('obName','')).trim())return toast('Add your name to continue');if(!String(fv('obC','')).trim())return toast(S.ob.via==='phone'?'Add your mobile number':'Add your email');const a=ageOf(String(fv('obDob','')));if(a==null||isNaN(a))return toast('Pick your date of birth on the calendar');if(a<18)return toast('You must be 18 or older to sign up');if(a>120)return toast('Check the year of your date of birth');S.ob.step=3},
-obRole(v){S.fav=String(fv('obFav','')).trim()||S.fav;S.user={name:String(S.form.obName).trim(),via:S.ob.via,contact:String(S.form.obC).trim(),dob:String(S.form.obDob),ver:{promoter:'none',owner:'none'},app:{}};S.role=v;S.ob={step:0,via:''};$('main').scrollTop=0;toast('Welcome, '+S.user.name.split(' ')[0])},
+obRole(v){S.fav=String(fv('obFav','')).trim()||S.fav;S.user={name:String(S.form.obName).trim(),via:S.ob.via,contact:String(S.form.obC).trim(),dob:String(S.form.obDob),ver:{promoter:'none',owner:'none'},app:{}};S.role=v;if(isAdmin(S.user.contact)){S.user.admin=true;S.role='admin'}S.ob={step:0,via:''};$('main').scrollTop=0;toast(S.user.admin?'Welcome, '+S.user.name.split(' ')[0]+'. You are signed in as the master admin':'Welcome, '+S.user.name.split(' ')[0])},
 verifySubmit(r){const n=String(fv('vfName','')).trim();if(!n)return toast(r==='owner'?'Add your venue name':'Add your promoter name');S.user.ver=S.user.ver||{};S.user.app=S.user.app||{};S.user.app[r]={name:n,addr:String(fv('vfAddr','')).trim(),venue:String(fv('vfVenue','')).trim(),doc:!!S.form.vfDoc};S.user.ver[r]='pending';['vfName','vfAddr','vfVenue','vfDoc'].forEach(k=>S.form[k]='');$('main').scrollTop=0},
 verifyDemo(r){S.user.ver[r]='ok';toast('Verified. Your '+ROLE_L[r].toLowerCase()+' dashboard is open')},
 tblToggle(){S.tblOn=!S.tblOn},
@@ -859,7 +866,7 @@ gadd(v){S.gcart[v]=(S.gcart[v]||0)+1},gclear(){S.gcart={}},giftCard(v){open('gif
 giftPay(n){const vid=(PEOPLE[n]||{}).at||'ovia',c=cartOf(S.gcart,0,menuFor(vid));if(!c.sub)return;startPay({kind:'gift',label:'Drink for '+n+' at '+V(vid).name,lines:c.lines.concat([[taxLbl(),c.tax]]),sub:c.sub,tax:c.tax,total:c.total,ev:'ind',sales:vid==='ovia'?c.sales:[],data:{to:n,lines:c.lines,venue:vid,note:String(fv('gNote','')).trim()}})},
 saveProf(){S.bio=String(fv('pBio',S.bio)).trim();S.fav=String(fv('pFav',S.fav)).trim();toast('Profile saved')},
 rmPhoto(i){S.photos.splice(+i,1)},alcT(v){const it=S.menu.find(m=>m.id===v);it.alc=!it.alc},
-block(n){if(!S.blocked.includes(n))S.blocked.push(n);S.matches=S.matches.filter(x=>x!==n);S.friends=S.friends.filter(x=>x!==n);closeSheet();toast(n.split(' ')[0]+' is blocked and can no longer see or message you')},
+block(n){if(!hidden(n))S.blocked.push(n);S.matches=S.matches.filter(x=>x!==n);S.friends=S.friends.filter(x=>x!==n);closeSheet();toast(n.split(' ')[0]+' is blocked and can no longer see or message you')},
 report(n){toast('Thanks. Our team reviews every report within 24 hours')},
 follow(n){S.follow=S.follow.includes(n)?S.follow.filter(x=>x!==n):S.follow.concat(n)},
 goBar(){S.tab.member='bar';closeSheet();$('main').scrollTop=0},
@@ -867,6 +874,16 @@ openNotifs(){$('push').classList.remove('show');open('notifs')},closeSheet(){clo
 readAll(){S.notifs.forEach(n=>n.unread=0)},
 fav(v){S.favs=S.favs.includes(v)?S.favs.filter(x=>x!==v):S.favs.concat(v)},
 checkin(v){if(S.checkins.includes(v))return;S.checkins.push(v);S.points+=50;S.life+=50;toast('Checked in at '+V(v).name+'. +50 points');if(S.share)notify('friends','Night shared','Your trusted contact can see you are at '+V(v).name+'.')},
+adF(v){S.adF=v},adDel(k){open('confirmDel',k)},
+adDelYes(k){if(!S.removed.includes(k))S.removed.push(k);if(k.indexOf('p:')===0){const n=k.slice(2);S.matches=S.matches.filter(x=>x!==n);S.friends=S.friends.filter(x=>x!==n)}closeSheet();toast('Deleted. Restore anytime under Users, Deleted')},
+adRestore(k){S.removed=S.removed.filter(x=>x!==k);toast('Restored')},
+adVDel(id){if(!S.vRemoved.includes(id))S.vRemoved.push(id);toast(V(id).name+' is hidden from the app')},adVRestore(id){S.vRemoved=S.vRemoved.filter(x=>x!==id);toast(V(id).name+' is live again')},
+adApprove(id){const a=adApps().find(x=>x.id===id);if(!a)return;
+  if(a.local){const acc=S.accounts.find(x=>x.contact===a.contact);acc.ver=acc.ver||{};acc.ver[a.role]='ok'}else a.st='ok';
+  if(a.local){S.apps.unshift(Object.assign({},a,{id:'done-'+id+'-'+(S.seq++),st:'ok',local:0}))}
+  if(a.role==='owner'&&a.biz){const v={id:'nv'+(S.seq++),name:a.biz,area:a.addr||'Tucson',addr:a.addr||'Tucson',cap:150,cover:0,open:'Hours not set yet',tags:['New'],deal:'New on Tucson Night Life',h:hsh(a.biz)%360,x:20+hsh(a.biz)%60,y:20+hsh(a.biz+'y')%60,friends:[],partner:0};S.newVenues.push(v);VENUES.push(v);S.crowd[v.id]=0;S.wait[v.id]=0}
+  toast((a.biz||a.name)+' approved'+(a.role==='owner'?'. The venue is live':''))},
+adReject(id){const a=adApps().find(x=>x.id===id);if(!a)return;if(a.local){const acc=S.accounts.find(x=>x.contact===a.contact);acc.ver[a.role]='none';S.apps.unshift(Object.assign({},a,{id:'done-'+id+'-'+(S.seq++),st:'no',local:0}))}else a.st='no';toast('Application rejected')},
 tipSet(v){S.form.sgTip=+v||''},
 sendSong(){const sg=String(fv('sgSong','')).trim(),note=String(fv('sgNote','')).trim(),tip=S.djTipsOn&&!myDue()?Math.max(0,parseFloat(S.form.sgTip)||0):0;if(!sg)return toast('Type the song and artist');
   if(tip>0){if(tip<S.djTipMin)return toast('The smallest bounty is '+usd(S.djTipMin))}else{if(S.points<100)return toast(myDue()?'You need 100 points, or pay your last bounty first':'You need 100 points, or post a bounty instead');S.points-=100}
@@ -949,14 +966,44 @@ const NAV={member:[['tonight','Tonight','moon'],['social','Social','users'],['sc
  owner:[['live','Live','pulse'],['events','Events','cal'],['scan','Scan','qr',1],['sell','Sell','bag'],['money','Money','cash']],
  staff:[['scan','Scan','qr'],['sell','Sell','bag'],['orders','Orders','list'],['pay','My pay','cash']],
  dj:[['booth','Requests','music'],['tips','Tips','cash']],
- sec:[['door','Door check','qr'],['pay','My pay','cash']]};
-const SC={member:M,promoter:PR,owner:OW,staff:ST,dj:DJ,sec:SEC};
+ sec:[['door','Door check','qr'],['pay','My pay','cash']],
+ admin:[['overview','Overview','chart'],['approvals','Approvals','list'],['users','Users','users'],['venues','Venues','pulse']]};
+function adApps(){const loc=S.accounts.filter(a=>!a.admin&&!S.removed.includes('a:'+a.contact.toLowerCase())).flatMap(a=>['owner','promoter'].filter(r=>(a.ver||{})[r]==='pending').map(r=>{const x=(a.app||{})[r]||{};return {id:'L:'+a.contact+':'+r,role:r,name:a.name,contact:a.contact,biz:x.name,addr:x.addr,venue:x.venue,doc:x.doc,st:'pending',local:1}}));return loc.concat(S.apps)}
+function adUsers(){const out=[];
+ Object.keys(PEOPLE).forEach(n=>out.push({k:'p:'+n,n,r:'member',d:(PEOPLE[n].at?'At '+V(PEOPLE[n].at).name+' · ':'')+PEOPLE[n].tier+' tier · age '+PEOPLE[n].age,face:1}));
+ PROMOS.forEach(x=>out.push({k:'pr:'+x.n,n:x.n,r:'promoter',d:'Verified promoter · '+num(x.fol)+' followers'}));
+ STAFFS.forEach(x=>out.push({k:'s:'+x.n,n:x.n,r:x.r,d:x.d}));
+ S.accounts.filter(a=>!a.admin).forEach(a=>out.push({k:'a:'+a.contact.toLowerCase(),n:a.name,r:a.role||'member',d:'Signed up with '+(a.via||'email')+' · '+a.contact}));
+ return out}
+const AD={
+overview(){const ap=adApps().filter(a=>a.st==='pending'),fees=ALL().reduce((a,e)=>a+calc(e).fee,0),mem=Object.keys(PEOPLE).filter(n=>!hidden(n)).length,vl=VENUES.filter(vLive).length;
+ return `<div class="col g6"><span class="eyebrow">Master admin · Tucson Night Life</span><h1>You run <em>the whole app</em></h1><div class="small dim">${esc(S.user.contact)}</div></div>
+ <div class="tiles"><div class="tile"><b class="${ap.length?'gold':''}">${ap.length}</b><span>Waiting for approval</span></div><div class="tile"><b>${vl}</b><span>Venues live</span></div><div class="tile"><b>${mem}</b><span>Members</span></div><div class="tile"><b class="gold">${usd(fees)}</b><span>Platform fees across events</span></div></div>
+ ${ap.length?`<div class="card vip"><h2>Needs your approval</h2>${ap.slice(0,3).map(a=>`<div class="row between"><span class="grow"><b>${esc(a.biz||a.name)}</b><div class="small dim">${a.role==='owner'?'Venue owner':'Promoter'} · ${esc(a.name)}</div></span><span class="tag warn">Pending</span></div>`).join('')}<button class="btn goldb full" data-a="tab" data-v="approvals">Review approvals</button></div>`:'<div class="card good"><h2>Nothing waiting</h2><div class="small dim">Every promoter and venue owner has been reviewed.</div></div>'}
+ <div class="card"><h2>Open any dashboard</h2><div class="small dim">As admin you skip verification and can use every feature.</div><div class="two">${['member','promoter','owner','staff','dj','sec'].map(r=>`<button class="btn ghost sm" data-a="role" data-v="${r}">${ROLE_L[r]}</button>`).join('')}</div></div>`},
+approvals(){const all=adApps(),pend=all.filter(a=>a.st==='pending'),done=all.filter(a=>a.st!=='pending');
+ const row=a=>`<div class="card ${a.st==='pending'?'vip':''}"><div class="row between"><h3>${esc(a.biz||a.name)}</h3><span class="tag ${a.role==='owner'?'gold':''}">${a.role==='owner'?'Venue owner':'Promoter'}</span></div>
+  <div><div class="kv"><span>Applicant</span><b>${esc(a.name)}</b></div><div class="kv"><span>Contact</span><b>${esc(a.contact)}</b></div><div class="kv"><span>${a.role==='owner'?'Address':'Instagram or site'}</span><b>${esc(a.addr||'Not given')}</b></div>${a.role==='owner'?`<div class="kv"><span>License photo</span><b>${a.doc?'Attached':'Not attached'}</b></div>`:`<div class="kv"><span>Promotes for</span><b>${esc(a.venue||'Not given')}</b></div>`}</div>
+  ${a.st==='pending'?`<div class="row"><button class="btn goldb sm grow" data-a="adApprove" data-v="${esc(a.id)}">Approve</button><button class="btn ghost sm grow" data-a="adReject" data-v="${esc(a.id)}">Reject</button></div>`:`<span class="tag ${a.st==='ok'?'ok':'crit'}" style="align-self:flex-start">${a.st==='ok'?'Approved':'Rejected'}</span>`}</div>`;
+ return `<div class="col g6"><span class="eyebrow">Approvals</span><h1>Promoters and <em>venues</em></h1></div>${pend.length?pend.map(row).join(''):'<div class="card good"><h2>All caught up</h2><div class="small dim">New promoter and venue owner applications land here.</div></div>'}${done.length?`<h2>Reviewed</h2>${done.map(row).join('')}`:''}`},
+users(){const q=String(S.adQ||'').toLowerCase(),f=S.adF,list=adUsers().filter(u=>(f==='deleted'?S.removed.includes(u.k):!S.removed.includes(u.k))&&(f==='all'||f==='deleted'||u.r===f||(f==='staff'&&['staff','dj','sec'].includes(u.r)))&&(!q||(u.n+' '+u.d).toLowerCase().includes(q)));
+ return `<div class="col g6"><span class="eyebrow">Users</span><h1>Everyone on <em>the app</em></h1></div>
+ <div class="row"><input type="text" id="adQ" data-s="adQ" value="${esc(S.adQ)}" placeholder="Search name, venue or email" aria-label="Search users"><button class="btn ghost sm" data-a="noop">Search</button></div>
+ <div class="chips">${[['all','All'],['member','Members'],['promoter','Promoters'],['owner','Owners'],['staff','Staff, DJ, security'],['deleted','Deleted']].map(x=>`<button class="chip ${f===x[0]?'on':''}" data-a="adF" data-v="${x[0]}">${x[1]}</button>`).join('')}</div>
+ <div class="card">${list.length?list.map(u=>`<div class="row">${u.face?av(u.n):`<span class="av" style="--h:${hue(u.n)}">${pic(u.n)}</span>`}<span class="grow"><b>${esc(u.n)}</b> <span class="tag">${ROLE_L[u.r]||u.r}</span><div class="small dim">${esc(u.d)}</div></span>${f==='deleted'?`<button class="btn ghost sm" data-a="adRestore" data-v="${esc(u.k)}">Restore</button>`:`<button class="btn ghost sm" data-a="adDel" data-v="${esc(u.k)}" style="color:var(--crit)">Delete</button>`}</div>`).join(''):'<div class="small dim">No one matches.</div>'}</div>`},
+venues(){const apps=adApps().filter(a=>a.role==='owner'&&a.st==='pending');
+ return `<div class="col g6"><span class="eyebrow">Venues</span><h1>Every room on <em>the map</em></h1></div>
+ ${apps.length?`<div class="card vip"><h2>Venues waiting for approval</h2>${apps.map(a=>`<div class="row between"><span class="grow"><b>${esc(a.biz)}</b><div class="small dim">${esc(a.name)} · ${esc(a.addr||'No address')}</div></span><button class="btn goldb sm" data-a="adApprove" data-v="${esc(a.id)}">Approve</button></div>`).join('')}</div>`:''}
+ ${VENUES.map(v=>{const off=!vLive(v);return `<div class="card ${off?'bad':''}"><div class="row between"><h3>${esc(v.name)}</h3><span class="tag ${off?'crit':'ok'}">${off?'Removed':'Live'}</span></div><div class="small dim">${esc(v.addr==='Sample venue'?v.area+' · sample venue':v.addr)} · ${here(v.id).length} members here · ${S.crowd[v.id]||0}% full</div>
+  <div class="row">${off?`<button class="btn ghost sm" data-a="adVRestore" data-v="${v.id}">Restore</button>`:`<button class="btn ghost sm" data-a="venue" data-v="${v.id}">Open</button><button class="btn ghost sm" data-a="adVDel" data-v="${v.id}" style="color:var(--crit)">Remove venue</button>`}</div></div>`}).join('')}`}
+};
+const SC={admin:AD,member:M,promoter:PR,owner:OW,staff:ST,dj:DJ,sec:SEC};
 function render(){const m=$('main'),y=m.scrollTop,inn=!!S.user;
   ['pts','bell','acct'].forEach(i=>$(i).style.display=inn?'':'none');
   if(!inn){m.innerHTML=onboard();$('nav').innerHTML='';closeSheet();save();return}
-  const tab=S.tab[S.role],gate=(S.role==='promoter'||S.role==='owner')&&(S.user.ver||{})[S.role]!=='ok';
+  const tab=S.tab[S.role],gate=(S.role==='promoter'||S.role==='owner')&&!S.user.admin&&(S.user.ver||{})[S.role]!=='ok';
   $('pts').textContent=num(S.points)+' pts';$('pts').style.display=S.role==='member'?'':'none';
-  $('acct').textContent=ROLE_L[S.role];
+  $('acct').textContent=ROLE_L[S.role]+(S.user.admin&&S.role!=='admin'?' · admin':'');
   const u=S.notifs.filter(n=>n.unread).length;$('bell').innerHTML=ic('bell')+(u?`<i>${u}</i>`:'');$('bell').style.display=S.role==='member'?'':'none';
   if(S.member&&!S.giftSeed){S.giftSeed=1;const u=ageBand()!=='21+';S.giftsIn.push({id:'G1',from:'Maya R.',to:me(),lines:[[u?'1 × Virgin mojito':'1 × House margarita',u?8:12]],total:u?8.7:13.04,note:'Welcome to the circle!',status:'paid'})}
   m.innerHTML=gate?verifyScreen(S.role):(SC[S.role][tab]||SC[S.role][NAV[S.role][0][0]])();m.scrollTop=y;bindSwipe();
